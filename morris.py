@@ -7,9 +7,14 @@ class MorrisDecorator:
 implementer of the Morris system.  Decorations including scoring, tagging, and creating portfolios.
 """
     def __init__(self):
-        self.portfolios = {}
         # This is a dictionaries of dictionaries.
         # The first dictionary maps "tags" to dictionaries wich map records to integers.
+        self.portfolios = {}
+
+        # This is a dictionaries of dictionaries.
+        # The first dictionary maps "tags" to dictionaries wich map records to integers.
+        self.tags = {}
+
         self.integerTagMaps = {}
 
     def createPortfolio(self,name):
@@ -69,7 +74,7 @@ implementer of the Morris system.  Decorations including scoring, tagging, and c
         # there must be a better way to do this in python.
         retval = retval + "Portfolio\n"
         for p in self.portfolios.keys():
-            retval = retval + p + "\n"
+            retval = retval + '\"{0}\"\n'.format(p)
         return retval
 
     def exportRecordsCSV(self):
@@ -83,7 +88,7 @@ implementer of the Morris system.  Decorations including scoring, tagging, and c
         for p in self.portfolios.keys():
             pf = self.portfolios[p]
             for r in pf.keys():
-                retval = retval + p + "," + r + "," + pf[r] + "\n"
+                retval = retval + '\"{0}\",\"{1}\",\"{2}\"\n'.format(p,r,pf[r])
 
         print "exporting retval = "+retval
         return retval

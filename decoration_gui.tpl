@@ -42,7 +42,7 @@
       <div class="row">
         <div class="col-md-8" >
           <div class="row">
-            <div class="col-md-8" id="content_area">
+            <div class="col-md-8 droppablerecord" id="content_area">
            <img class="col-md-8" src="/imgs/William_Morris_design_for_Trellis_wallpaper_1862.jpg" alt="William_Morris_design_for_Trellis_wallpaper_1862">
             </div>
           </div>
@@ -60,22 +60,17 @@
           <div class="row" id="portfolios">
             <div class="col-md-6">Portfolios
 	    	 <button type="button" class="btn btn-like" id="add_portfolio_button">Add Portfolio</button>
-	    	 <input type="text" id="new_portfolio_name">Add Portfolio</input>
+	    	 <input type="text" id="new_portfolio_name" placeholder="New Portfolio Name..."></input>
                  <ul id="portfolio_list"></ul>
             </div>
           </div>
         </div>
-        <div class="col-md-4" id="tags">Tags</div>
-
- 
-<div id="droppable" class="ui-widget-header">
-  <p>Drop here</p>
-</div>
-
+        <div class="col-md-4" id="tags">Tags
+	    	 <button type="button" class="btn btn-like" id="add_tag_button">Add Tag</button>
+	    	 <input type="text" id="new_tag_name" placeholder="New Tag"></input>
+                 <ul id="tag_list"></ul>
+        </div>
       </div>
-
- 
- 
   </body>
   <script>
 
@@ -98,8 +93,41 @@ function set_portfolios(data) {
       var ul = $('#portfolio_list');
       ul.empty();
       $.each(names, function (idx, elem) {
-         ul.append('<div class="mydraggable">' + elem + "</div>");
+         ul.append('<div class="mydraggable droppableportfolio">' + elem + "</div>");
          $('.mydraggable').draggable();
+         $('.droppableportfolio' ).droppable({
+           tolerance: "touch",
+           drop: function(event, ui) {
+                 var portfolio = $(this).text();
+                 alert("mydraggable portfolio = "+portfolio);
+                 var key = currentKeyToContent;
+                 var record = ""
+                 $.post("/portfolio/add_record/"+portfolio+"/"+key+"/"+record
+                 ).fail(function() { alert("The addition of that record to that portfolio failed."); });
+           }
+    });
+      })
+}
+
+
+function set_tags(data) {
+      var names = data['data']
+      var ul = $('#tag_list');
+      ul.empty();
+      $.each(names, function (idx, elem) {
+         ul.append('<div class="mydraggable droppabletag">' + elem + "</div>");
+         $('.mydraggable').draggable();
+         $('.droppabletag' ).droppable({
+           tolerance: "touch",
+           drop: function(event, ui) {
+                 var portfolio = $(this).text();
+                 alert("mydraggable tag = "+tag);
+                 var key = currentKeyToContent;
+                 var record = ""
+                 $.post("/tag/add_record/"+tag+"/"+key+"/"+record
+                 ).fail(function() { alert("The addition of that record to that portfolio failed."); });
+           }
+    });
       })
 }
 
@@ -140,10 +168,23 @@ function get_portfolio_list() {
           ).fail(function() { alert("Call to portfolio content manager failed."); });
 }
 
+function get_tag_list() {
+       $.get("/tag",{},
+           set_tags
+          ).fail(function() { alert("Call to tag content manager failed."); });
+}
+
 function add_portfolio_handler() {
         var name = $('#new_portfolio_name').val();
        $.post("/portfolio/"+name,{},
               get_portfolio_list
+          ).fail(function() { alert("Call to change content manager failed."); });
+}
+
+function add_tag_handler() {
+        var name = $('#new_tag_name').val();
+       $.post("/tag/"+name,{},
+              get_tag_list
           ).fail(function() { alert("Call to change content manager failed."); });
 }
 
@@ -153,18 +194,29 @@ $('#prev_button').click(prev_handler);
 $('#like_button').click(like_handler);
 $('#dislike_button').click(dislike_handler);
 $('#add_portfolio_button').click(add_portfolio_handler);
+$('#add_tag_button').click(add_tag_handler);
 // END   set up click handlers
 
-    $( "#droppable" ).droppable({
+    $( ".droppablerecord" ).droppable({
            tolerance: "touch",
            drop: function(event, ui) {
                  var portfolio = ui.draggable.text();
+// Is this is a portfolio or a tag?
+                 var isPortfolio = true;
+                 alert("Content Area portfolio = "+portfolio);
                  var key = currentKeyToContent;
-                 var record = "xxx"
-                 $.post("/portfolio/add_record/"+portfolio+"/"+key+"/"+record
-                 ).fail(function() { alert("The addition of that record to that portfolio failed."); });
+                 var record = ""
+                 if (isPortfolio) {
+                     $.post("/portfolio/add_record/"+portfolio+"/"+key+"/"+record
+                     ).fail(function() { alert("The addition of that record to the content_area portfolio failed."); });
+                 } else {
+                     $.post("/tag/add_record/"+portfolio+"/"+key+"/"+record
+                     ).fail(function() { alert("The addition of that record to the content_area tag failed."); });
+                 }
            }
     });
+
+    $( ".droppablerecord" ).draggable();
 
     function process_record_request(data) {
        currentKeyToContent = data;
@@ -188,4 +240,5 @@ function get_initial_record() {
     get_portfolio_list();
 
   </script>
+
 </html>

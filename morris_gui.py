@@ -75,10 +75,47 @@ def get_records():
 def add_record_to_portfolio(key,record,portfolio):
     r = requests.post(URL_TO_MORRIS_API+"/portfolio/add_record/"+portfolio+"/"+key+"/"+record)
     return r.text
-# END SERVER-SIDE CALLS for Morris Content Manager
+@app.route('/portfolio/add_record/<portfolio>/<key>/',method='POST')
+def add_record_to_portfolio(key,portfolio):
+    r = requests.post(URL_TO_MORRIS_API+"/portfolio/add_record/"+portfolio+"/"+key+"/")
+    return r.text
+# End Portfolio work
 
+# Begin Tag work
+@app.route('/tag', method='GET')
+def get_tags():
+    r = requests.get(URL_TO_MORRIS_API+"/tag")
+    d = ast.literal_eval(r.text)
+    print "d = "+repr(d)
+    return d
 
+@app.route('/tag/<name>', method='POST')
+def get_create_tag(name):
+    print "Calling to post tag"
+    r = requests.post(URL_TO_MORRIS_API+"/tag/"+name)
+    return r.text
+
+@app.route('/tag_export', method='GET')
+def get_export_tag():
+    r = requests.get(URL_TO_MORRIS_API+"/tag_export")
+    return r.text
+
+@app.route('/tag_records', method='GET')
+def get_records():
+    r = requests.get(URL_TO_MORRIS_API+"/tag_records")
+    return r.text
+
+@app.route('/tag/add_record/<tag>/<key>/<record>',method='POST')
+def add_record_to_tag(key,record,tag):
+    r = requests.post(URL_TO_MORRIS_API+"/tag/add_record/"+tag+"/"+key+"/"+record)
+    return r.text
+
+@app.route('/tag/add_record/<tag>/<key>/',method='POST')
+def add_record_to_tag(key,tag):
+    r = requests.post(URL_TO_MORRIS_API+"/tag/add_record/"+tag+"/"+key+"/")
+    return r.text
 # BEGIN SERVER-SIDE CALLS for Morris Content Manager
+
 @app.route('/cm/<key>', method='GET')
 def get_record(key):
     r = requests.get(URL_TO_MORRIS_CM_API+"/cm/"+key)
