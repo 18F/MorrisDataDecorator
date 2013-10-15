@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-       <title>Decorate FedBizOps</title>
+       <title>Morris Data Export</title>
        <meta name="robots" content="NOINDEX, NOFOLLOW">
     <title>Export Decorations</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,36 +25,36 @@
 
   <div class="container">
     {{!navbar}}
-    <textarea id="export-portfolio-area" class="form-control" rows="3"></textarea>
-    <textarea id="export-records-area" class="form-control" rows="3"></textarea>
+    <p>Portfolios:</p>
+    <textarea id="export-portfolio-area" class="form-control" rows="5"></textarea>
+    <textarea id="export-portfolio-assocations-area" class="form-control" rows="5"></textarea>
+    <p>Tags:</p>
+    <textarea id="export-tag-area" class="form-control" rows="5"></textarea>
+    <textarea id="export-tag-associations-area" class="form-control" rows="5"></textarea>
   </div>
   </body>
   <script>
 
-  function load_portfolio_area(data) {
-  	   $('#export-portfolio-area').val(data);
-  }
+  $('#export_nav').addClass("active");
+  var failMessage = " failed in some way; please try something else.";
 
-  function get_portfolios() {
-      $.get("/portfolio_export", { },
-           load_portfolio_area
-          ).fail(function() { alert("The search failed in some way; please try something else."); });
+   function load_text_area(selector,get_url) {
+     function load_text_area(data) {
+     	   $(selector).val(data);
+     }	   
+     function get_data() {
+           $.get(get_url, { },
+               load_text_area
+           ).fail(function() { alert("The search "+get_url+failMessage); });
+      }
+      get_data();
    }
-    
-   get_portfolios();
 
-  function load_records_area(data) {
-  	   alert("data"+data)
-  	   $('#export-records-area').val(data);
-  }
+   load_text_area('#export-portfolio-assocations-area',"/portfolio_records");
+   load_text_area('#export-portfolio-area',"/portfolio_export");
 
-  function get_records() {
-      $.get("/portfolio_records", { },
-           load_records_area
-          ).fail(function() { alert("The search failed in some way; please try something else."); });
-   }
-    
-   get_records();
+   load_text_area('#export-tag-associations-area',"/tag_records");
+   load_text_area('#export-tag-area',"/tag_export");
   
  </script>
 </html>

@@ -3,47 +3,108 @@
 
 
 class MorrisDecorator:
-    """Morris is a decorator system for decorating objects that may not be under full control of the 
+    """Morris is a decorator system for decorating content objects that may not be under full control of the 
 implementer of the Morris system.  Decorations including scoring, tagging, and creating portfolios.
 """
     def __init__(self):
-        # This is a dictionaries of dictionaries.
-        # The first dictionary maps "tags" to dictionaries wich map records to integers.
-        self.portfolios = {}
+        """
+The basic structure is a doubly-indexed table that assocations content to decorations and vice versa.
+You can perform O(1) lookup of either the decoration strings to find the decorated content, or the 
+content keys to find the decorations.
 
-        # This is a dictionaries of dictionaries.
-        # The first dictionary maps "tags" to dictionaries wich map records to integers.
-        self.tags = {}
+Note that you can create unassociated content; that is, you can create a decoration which 
+is not attached to any content, and you can declare content that has no decorations (though
+presumably there will be undeclared content as well.)
+        """
+        self.decorationToContent = {}
+        self.contentToDecoration = {}
 
+# Not sure what to do about this, really needs to be generalized as a Decoration.
         self.integerTagMaps = {}
 
-    def createPortfolio(self,name):
-        p = {}
-        self.portfolios[name] = p
-        return True
-    def getAllPortfolios(self):
-        return self.portfolios.keys()
+    def createDecorations(self,decos):
+        """ Idempotently create empty decoration records if they do not already exist.
+        """
+        for d in decos:
+            if (d not in self.decorationToContent):
+                self.decorationToContent[d] = [];
+        return decos
 
-    def getPortfolio(self,name):
-        return self.portfolios[name]
+    def createContents(self,contents):
+        """ Idempotently create empty content records if they do not already exist.
+        """
+        for c in contents:
+            if (c not in self.contentToDecoration):
+                self.contentToDecoration[c] = [];
+                
+    def associateDecorationWithContentSingle(self,decoration,content):
+        self.createDecorations([decoration])
+        self.createContents([content])
+        if (decoration not in self.contentToDecoration[content]):
+            self.contentToDecoration[content].append(decoration)
+        if (content not in self.decorationToContent[decoration]):
+            self.decorationToContent[decoration].append(content)
 
-    def addRecord(self,key,record,portfolio):
-        p = self.getPortfolio(portfolio)
-        p[key] = record
-        print "added key ="+key
-        return p
+    def getContentsForDecoration(self,decoration):
+        """ Return a collection of content having this decoration
+        """
+        return self.decorationToContent.get(decoration,[])
 
-    def delRecord(self,record_key,portfolio):
-        p = self.getPortfolio(portfolio)
-        if (record_key in p):
-            del p[record_key]
-            return True
-        else:
-            return False
+    def getDecorationsForContent(self,content):
+        """ Return a collection of content having this decoration
+        """
+        return self.contentToDecoration.get(content,[])
 
-    def getAllPortfoliosContainingRecord(record):
-        return True
+    def getAllDecorations(self):
+        return self.decorationToContent.keys()
 
+    def getAllContents(self):
+        return self.contentToDecorations.keys()
+
+    def exportDecorationsAsCSV(self):
+        """
+    Export the decorations only without the contents
+        """
+        retval = ""
+        retval = retval + "Decoration\n"
+        for p in self.decorationToContent.keys():
+            retval = retval + '\"{0}\"\n'.format(p)
+        return retval
+
+    def exportContentsAsCSV(self):
+        """
+    Export the contents only without assocations
+        """
+        retval = ""
+        retval = retval + "Content\n"
+        for p in self.contentToDecoration.keys():
+            retval = retval + '\"{0}\"\n'.format(p)
+        return retval
+
+    def exportDecorationsToContentsAsCSV(self):
+        """
+    Export the entire datastore as a CSV file 
+        """
+        retval = ""
+        retval = retval + "Content,Decoration\n"
+        for c in self.contentToDecoration.keys():
+            d = self.contentToDecoration[c]
+            retval = retval + '\"{0}\",\"{1}\"\n'.format(c,d)
+        return retval
+
+    def exportContentsToDecorationsAsCSV(self):
+        """
+    Export the entire datastore as a CSV file 
+        """
+        retval = ""
+        retval = retval + "Decoration,Content\n"
+        for d in self.decorationToContent.keys():
+            c = self.decorationToContent[d]
+            retval = retval + '\"{0}\",\"{1}\"\n'.format(d,c)
+        return retval
+
+
+# I will have to clean this up later!
     def getRecordInteger(self,tag,recordkey):
         if (tag in self.integerTagMaps):
             m = self.integerTagMaps[tag]
@@ -63,35 +124,5 @@ implementer of the Morris system.  Decorations including scoring, tagging, and c
         else:
             m[recordkey] = int(delta)
         return str(m[recordkey])
-
-
-    def exportPortfoliosCSV(self):
-        """
-    Export the entire datastore as a CSV file
-        """
-        retval = ""
-        # I'm pretty sure this is terribly inefficent...
-        # there must be a better way to do this in python.
-        retval = retval + "Portfolio\n"
-        for p in self.portfolios.keys():
-            retval = retval + '\"{0}\"\n'.format(p)
-        return retval
-
-    def exportRecordsCSV(self):
-        """
-    Export the entire datastore as a CSV file
-        """
-        retval = ""
-        # I'm pretty sure this is terribly inefficent...
-        # there must be a better way to do this in python.
-        retval = retval + "Portfolio,Record,Data\n"
-        for p in self.portfolios.keys():
-            pf = self.portfolios[p]
-            for r in pf.keys():
-                retval = retval + '\"{0}\",\"{1}\",\"{2}\"\n'.format(p,r,pf[r])
-
-        print "exporting retval = "+retval
-        return retval
-
 
         

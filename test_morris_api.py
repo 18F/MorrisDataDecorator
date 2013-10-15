@@ -15,6 +15,7 @@ import unittest
 import requests
 import csv
 import StringIO
+import sys
 
 # We import this to invoke Bottle on it to treat it as a web service,
 # but WE DON'T call it directly --- the test_morris.py file does that.
@@ -52,66 +53,66 @@ class TestMorrisWebServiceAPI(unittest.TestCase):
         self.assertTrue(r.status_code == 200)
 
 
-    def test_canCreatePortfolio(self):
+    def test_canCreateDecoration(self):
         name = "spud"
-        r = requests.post(URLtoMorrisAPI+"/portfolio/"+name)
+        r = requests.post(URLtoMorrisAPI+"/decoration/"+name)
         self.assertTrue(r.status_code == 200)
-        r = requests.get(URLtoMorrisAPI+"/portfolio/"+name)
+        r = requests.get(URLtoMorrisAPI+"/decoration/"+name)
         self.assertTrue(r.status_code == 200)
-        d = r.json()
-        print repr(d)
 
-    def add_portfolio(self,name):
-        return requests.post(URLtoMorrisAPI+"/portfolio/"+name)
 
-    def add_record(self,name,key,content):
-        return requests.post(URLtoMorrisAPI+"/portfolio/add_record/"+name+"/"+key+"/"+content)
+    def add_decoration(self,decoration):
+        return requests.post(URLtoMorrisAPI+"/decoration/"+decoration)
 
-    def test_canCreatePortfolioWithRecords(self):
-        name = "spud"
-        r = self.add_portfolio(name)
+    def add_record(self,decoration,content):
+        return requests.post(URLtoMorrisAPI+"/decoration/add_record/"+decoration+"/"+content)
+
+    def test_canCreateDecorationWithRecords(self):
+        decoration= "spud"
+        r = self.add_decoration(decoration)
         self.assertTrue(r.status_code == 200)
         # now add a record
-        key = "mykey"
-        content = "mycontent"
-        self.add_record(name,key,content)
-        r = requests.get(URLtoMorrisAPI+"/portfolio/"+name)
+        content = "mykey"
+        self.add_record(decoration,content)
+        r = requests.get(URLtoMorrisAPI+"/decoration/"+decoration)
         self.assertTrue(r.status_code == 200)
         d = r.json()
-        self.assertTrue(key in d)
-        self.assertEqual(d[key],content)
+        print "d['data']" + repr(d['data'])
+        print "XXX"
+        print "YYY"
+        self.assertTrue(content in d['data'])
+        self.assertEqual(d['data'],[content])
 
-    def test_can_export_portfolios_reports_to_csv(self):
+    def test_can_export_decorations_reports_to_csv(self):
         """"
         We will try to test using a "complete circuit" methodology.
         """
-        self.add_portfolio("aaa")
-        self.add_record("aaa","r1","c1")
-        self.add_record("aaa","r2","c2")
-        self.add_portfolio("bbb")
-        self.add_record("bbb","r3","c3")
-        self.add_record("bbb","r4","c4")
-        self.add_portfolio("ccc")
-        self.add_record("ccc","r5","c5")
-        r = requests.get(URLtoMorrisAPI+"/portfolio_records")
+        self.add_decoration("aaa")
+        self.add_record("aaa","r1")
+        self.add_record("aaa","r2")
+        self.add_decoration("bbb")
+        self.add_record("bbb","r3")
+        self.add_record("bbb","r4")
+        self.add_decoration("ccc")
+        self.add_record("ccc","r5")
+        r = requests.get(URLtoMorrisAPI+"/decoration_records")
         self.assertTrue(r.status_code == 200)
         # Now we try to build a CSV reader to check that we got what we put in!
-        print "r.text = "+r.text
         input = StringIO.StringIO(r.text)
+        print "r.text = "+r.text
         r = csv.reader(input)
         for row in r:
             print ', '.join(row)
 
-    def test_can_export_portfolio_to_csv(self):
+    def test_can_export_decoration_to_csv(self):
         """"
         We will try to test using a "complete circuit" methodology.
         """
-        self.add_portfolio("aaa")
-        self.add_portfolio("bbb")
-        self.add_portfolio("ccc")
-        r = requests.get(URLtoMorrisAPI+"/portfolio_export")
+        self.add_decoration("aaa")
+        self.add_decoration("bbb")
+        self.add_decoration("ccc")
+        r = requests.get(URLtoMorrisAPI+"/decoration_export")
         self.assertTrue(r.status_code == 200)
-        print "r.text = "+r.text
         input = StringIO.StringIO(r.text)
         r = csv.reader(input)
         for row in r:

@@ -2,9 +2,8 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-       <title>Decorate FedBizOps</title>
+       <title>Morris Data Decorator</title>
        <meta name="robots" content="NOINDEX, NOFOLLOW">
-    <title>Bootstrap 101 Template</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Bootstrap -->
     <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
@@ -58,21 +57,28 @@
             </div>
           </div>
           <div class="row" id="portfolios">
-            <div class="col-md-6">Portfolios
+            <div class="col-md-6"> 
+               <div>All Portfolios</div>
 	    	 <button type="button" class="btn btn-like" id="add_portfolio_button">Add Portfolio</button>
-	    	 <input type="text" id="new_portfolio_name" placeholder="New Portfolio Name..."></input>
+	    	 <input type="text" id="new_portfolio_name" placeholder="New Portfolio Name...">
                  <ul id="portfolio_list"></ul>
             </div>
           </div>
         </div>
-        <div class="col-md-4" id="tags">Tags
+        <div class="col-md-4" id="tags">
+                <p>Tags For This Record</p>
 	    	 <button type="button" class="btn btn-like" id="add_tag_button">Add Tag</button>
-	    	 <input type="text" id="new_tag_name" placeholder="New Tag"></input>
+	    	 <input type="text" id="new_tag_name" placeholder="New Tag...">
+                 <ul id="current_tag_list"></ul>
+                 <p>All Tags</p>
                  <ul id="tag_list"></ul>
         </div>
+
+        </div>
       </div>
-  </body>
   <script>
+
+  $('#decorate_nav').addClass("active");
 
 // This is really a global variable, holding the key representing
 // the record currently visible.
@@ -87,14 +93,15 @@ function set_html_content(data) {
 function set_vote_value(data) {
        $('#vote_quantity').html(decodeURIComponent(data));
 }
-
+var global_portfolios = [];
 function set_portfolios(data) {
       var names = data['data']
+      global_portfolios = names;
       var ul = $('#portfolio_list');
       ul.empty();
       $.each(names, function (idx, elem) {
          ul.append('<div class="mydraggable droppableportfolio">' + elem + "</div>");
-         $('.mydraggable').draggable();
+         $('.mydraggable').draggable({ revert: true });
          $('.droppableportfolio' ).droppable({
            tolerance: "touch",
            drop: function(event, ui) {
@@ -109,20 +116,21 @@ function set_portfolios(data) {
       })
 }
 
-
-function set_tags(data) {
-      var names = data['data']
-      var ul = $('#tag_list');
+var global_tags = [];
+function set_tags(selector,data) {
+      var names = data['data'];
+      alert("selector, names" + selector + names);
+      var ul = $(selector);
       ul.empty();
       $.each(names, function (idx, elem) {
          ul.append('<div class="mydraggable droppabletag">' + elem + "</div>");
-         $('.mydraggable').draggable();
+         $('.mydraggable').draggable({ revert: true });
          $('.droppabletag' ).droppable({
            tolerance: "touch",
            drop: function(event, ui) {
-                 var portfolio = $(this).text();
-                 alert("mydraggable tag = "+tag);
+                 var tag = $(this).text();
                  var key = currentKeyToContent;
+                 alert("mydraggable tag = "+tag+"key ="+key);
                  var record = ""
                  $.post("/tag/add_record/"+tag+"/"+key+"/"+record
                  ).fail(function() { alert("The addition of that record to that portfolio failed."); });
@@ -170,7 +178,18 @@ function get_portfolio_list() {
 
 function get_tag_list() {
        $.get("/tag",{},
-           set_tags
+           function (data) { 
+                set_tags('#tag_list',data);
+                global_tags = data['data'];
+           }
+          ).fail(function() { alert("Call to tag content manager failed."); });
+}
+
+function get_current_tag_list(name) {
+       $.get("/tag/"+name,{},
+           function (data) { 
+           set_tags('#current_tag_list',data);
+}
           ).fail(function() { alert("Call to tag content manager failed."); });
 }
 
@@ -186,6 +205,9 @@ function add_tag_handler() {
        $.post("/tag/"+name,{},
               get_tag_list
           ).fail(function() { alert("Call to change content manager failed."); });
+       $.get("/tag/"+name,{},
+           function (data) { set_tags('#current_tag_list',data);}
+          ).fail(function() { alert("Call to change content manager failed."); });
 }
 
 // BEGIN set up click handlers
@@ -197,26 +219,30 @@ $('#add_portfolio_button').click(add_portfolio_handler);
 $('#add_tag_button').click(add_tag_handler);
 // END   set up click handlers
 
+function isPortfolio(txt) {
+    return ($.inArray(txt, global_portfolios) != -1);
+}
+
     $( ".droppablerecord" ).droppable({
            tolerance: "touch",
            drop: function(event, ui) {
-                 var portfolio = ui.draggable.text();
+                 var text = ui.draggable.text();
 // Is this is a portfolio or a tag?
-                 var isPortfolio = true;
+                 var portfolio = isPortfolio(text);
                  alert("Content Area portfolio = "+portfolio);
                  var key = currentKeyToContent;
                  var record = ""
-                 if (isPortfolio) {
-                     $.post("/portfolio/add_record/"+portfolio+"/"+key+"/"+record
+                 if (portfolio) {
+                     $.post("/portfolio/add_record/"+text+"/"+key+"/"+record
                      ).fail(function() { alert("The addition of that record to the content_area portfolio failed."); });
                  } else {
-                     $.post("/tag/add_record/"+portfolio+"/"+key+"/"+record
+                     $.post("/tag/add_record/"+text+"/"+key+"/"+record
                      ).fail(function() { alert("The addition of that record to the content_area tag failed."); });
                  }
            }
     });
 
-    $( ".droppablerecord" ).draggable();
+    $( ".droppablerecord" ).draggable({ revert: true });
 
     function process_record_request(data) {
        currentKeyToContent = data;
@@ -227,6 +253,8 @@ $('#add_tag_button').click(add_tag_handler);
        $.get("/record_integer/"+TAG_FOR_LIKES+"/"+data,{ },
            set_vote_value
           ).fail(function() { alert("The search failed in some way; please try something else."); });
+       alert("About to call get_current_tag_list"+currentKeyToContent);
+       get_current_tag_list(currentKeyToContent);
     }
 
 function get_initial_record() {
@@ -238,7 +266,8 @@ function get_initial_record() {
     get_initial_record();
 
     get_portfolio_list();
+    get_tag_list();
 
   </script>
-
+  </body>
 </html>

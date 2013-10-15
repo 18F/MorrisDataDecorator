@@ -13,8 +13,9 @@
   <!-- Collect the nav links, forms, and other content for toggling -->
   <div class="collapse navbar-collapse navbar-ex1-collapse">
     <ul class="nav navbar-nav">
-      <li class="active"><a href="/gui-decorate">Decorate</a></li>
-      <li><a href="/gui-export">Export</a></li>
+      <li id="decorate_nav"><a href="/gui-decorate">Decorate</a></li>
+      <li id="export_nav"><a href="/gui-export">Export</a></li>
+      <li id="import_nav"><a href="/gui-export">Import</a></li>
       <li class="dropdown">
         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
         <ul class="dropdown-menu">

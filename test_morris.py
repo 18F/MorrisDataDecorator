@@ -1,33 +1,66 @@
 import unittest
 import morris
 
+decoration_0 = "ThisIsADecoration"    
+decoration_1 = "This is a second decoration"    
+content_record_0= "http://yoyodyne"
+
 class TestMorrisDecorator(unittest.TestCase):
-    
     def setUp(self):
         self.d = morris.MorrisDecorator()
 
-    def test_canCreatePortfolio(self):
-        self.d.createPortfolio("spud")
-        p = self.d.getPortfolio("spud")
-        self.assertTrue(p is not None)
+    def test_can_create_decorations_without_content(self):
+        """ Test that we can create a decoration without content.  This corresponds to 
+either an tag not yet attached to any content or an empty portfolio.
+        """
+        self.d.createDecorations([decoration_0])
+        decorations = self.d.getAllDecorations()
+        self.assertEqual(decorations[0],decoration_0)
+        self.assertEqual(len(decorations),1)
 
-    def test_canAddRecords(self):
-        d = self.d
-        d.createPortfolio("spud")
-        d.addRecord("test key","test contents","spud")
-        p = d.getPortfolio("spud")
-        self.assertTrue("test key" in p)
 
-    def test_canDelRecords(self):
-        d = self.d
-        d.createPortfolio("spud")
-        key = "test key"
-        d.addRecord(key,"test contents","spud")
-        p = d.getPortfolio("spud")
-        self.assertTrue(key in p)
-        d.delRecord(key,"spud")
-        p = d.getPortfolio("spud")
-        self.assertFalse(key in p)
+    def test_can_associate_decoration_to_content(self):
+        """ Test that we can decorate content (i.e., either attach tag to a content 
+object or create a portfolio containing an object.
+        """
+        self.d.associateDecorationWithContentSingle(decoration_0,content_record_0)
+        decorations_out = self.d.getDecorationsForContent(content_record_0)
+        self.assertEqual(decorations_out[0],decoration_0)
+        contents_out = self.d.getContentsForDecoration(decoration_0)
+        self.assertEqual(contents_out[0],content_record_0)
+
+    def test_can_associate_multiple_decorations_to_content(self):
+        """ Test that we can decorate content (i.e., either attach tag to a content 
+object or create a portfolio containing an object.
+        """
+        self.d.associateDecorationWithContentSingle(decoration_0,content_record_0)
+        self.d.associateDecorationWithContentSingle(decoration_1,content_record_0)
+        decorations_out = self.d.getDecorationsForContent(content_record_0)
+        self.assertEqual(decorations_out[0],decoration_0)
+        self.assertEqual(decorations_out[1],decoration_1)
+        contents_out = self.d.getContentsForDecoration(decoration_0)
+        self.assertEqual(contents_out[0],content_record_0)
+
+    def test_export_decorations(self):
+        self.d.associateDecorationWithContentSingle(decoration_0,content_record_0)
+        all_decorations = self.d.exportDecorationsAsCSV()
+        self.assertEqual(all_decorations,"Decoration\n\""+decoration_0+"\"\n")
+
+    def test_export_contents(self):
+        self.d.associateDecorationWithContentSingle(decoration_0,content_record_0)
+        all_contents = self.d.exportContentsAsCSV()
+        self.assertEqual(all_contents,"Content\n\""+content_record_0+"\"\n")
+
+    def test_export_decorations_to_contents(self):
+        self.d.associateDecorationWithContentSingle(decoration_0,content_record_0)
+        decorations_to_contents = self.d.exportDecorationsToContentsAsCSV()
+        self.assertTrue(decorations_to_contents is not None)
+
+    def test_export_contents_to_deocrations(self):
+        self.d.associateDecorationWithContentSingle(decoration_0,content_record_0)
+        contents_to_decorations = self.d.exportDecorationsToContentsAsCSV()
+        self.assertTrue(contents_to_decorations is not None)
+
 
 # BEGIN tests concerning scoring
     def test_CanVoteUp(self):
@@ -42,8 +75,6 @@ class TestMorrisDecorator(unittest.TestCase):
         self.assertEqual(int(v1),(int(v0)+1))
         self.assertEqual(int(rv),(int(v0)+1))
 # END   tests concerning scoring
-    
-# Much more is needed to make this complete---but I am a Spiker!
 
 if __name__ == '__main__':
     unittest.main()
