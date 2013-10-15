@@ -90,6 +90,7 @@ presumably there will be undeclared content as well.)
         for c in self.contentToDecoration.keys():
             d = self.contentToDecoration[c]
             retval = retval + '\"{0}\",\"{1}\"\n'.format(c,d)
+        print "retval from Export = "+retval
         return retval
 
     def exportContentsToDecorationsAsCSV(self):

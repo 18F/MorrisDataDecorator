@@ -67,9 +67,9 @@
         </div>
         <div class="col-md-4" id="tags">
                 <p>Tags For This Record</p>
+                 <ul id="current_tag_list"></ul>
 	    	 <button type="button" class="btn btn-like" id="add_tag_button">Add Tag</button>
 	    	 <input type="text" id="new_tag_name" placeholder="New Tag...">
-                 <ul id="current_tag_list"></ul>
                  <p>All Tags</p>
                  <ul id="tag_list"></ul>
         </div>
@@ -106,10 +106,8 @@ function set_portfolios(data) {
            tolerance: "touch",
            drop: function(event, ui) {
                  var portfolio = $(this).text();
-                 alert("mydraggable portfolio = "+portfolio);
                  var key = currentKeyToContent;
-                 var record = ""
-                 $.post("/portfolio/add_record/"+portfolio+"/"+key+"/"+record
+                 $.post("/portfolio/add_record/"+portfolio+"/"+key
                  ).fail(function() { alert("The addition of that record to that portfolio failed."); });
            }
     });
@@ -118,8 +116,7 @@ function set_portfolios(data) {
 
 var global_tags = [];
 function set_tags(selector,data) {
-      var names = data['data'];
-      alert("selector, names" + selector + names);
+      var names = data;
       var ul = $(selector);
       ul.empty();
       $.each(names, function (idx, elem) {
@@ -129,10 +126,8 @@ function set_tags(selector,data) {
            tolerance: "touch",
            drop: function(event, ui) {
                  var tag = $(this).text();
-                 var key = currentKeyToContent;
-                 alert("mydraggable tag = "+tag+"key ="+key);
                  var record = ""
-                 $.post("/tag/add_record/"+tag+"/"+key+"/"+record
+                 $.post("/tag/add_record/"+tag+"/"+key
                  ).fail(function() { alert("The addition of that record to that portfolio failed."); });
            }
     });
@@ -179,7 +174,7 @@ function get_portfolio_list() {
 function get_tag_list() {
        $.get("/tag",{},
            function (data) { 
-                set_tags('#tag_list',data);
+                set_tags('#tag_list',data['data']);
                 global_tags = data['data'];
            }
           ).fail(function() { alert("Call to tag content manager failed."); });
@@ -188,8 +183,9 @@ function get_tag_list() {
 function get_current_tag_list(name) {
        $.get("/tag/"+name,{},
            function (data) { 
-           set_tags('#current_tag_list',data);
-}
+               datax = jQuery.parseJSON( data );
+               set_tags('#current_tag_list',datax['data']);
+           }
           ).fail(function() { alert("Call to tag content manager failed."); });
 }
 
@@ -231,13 +227,14 @@ function isPortfolio(txt) {
                  var portfolio = isPortfolio(text);
                  alert("Content Area portfolio = "+portfolio);
                  var key = currentKeyToContent;
-                 var record = ""
                  if (portfolio) {
-                     $.post("/portfolio/add_record/"+text+"/"+key+"/"+record
+                     $.post("/portfolio/add_record/"+text+"/"+key
                      ).fail(function() { alert("The addition of that record to the content_area portfolio failed."); });
                  } else {
-                     $.post("/tag/add_record/"+text+"/"+key+"/"+record
+                     $.post("/tag/add_record/"+text+"/"+key,
+                        get_current_tag_list(currentKeyToContent)
                      ).fail(function() { alert("The addition of that record to the content_area tag failed."); });
+
                  }
            }
     });

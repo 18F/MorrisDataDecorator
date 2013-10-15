@@ -73,13 +73,9 @@ def get_records():
     r = requests.get(URL_TO_MORRIS_PORTFOLIOS_API+"/decoration_records")
     return r.text
 
-@app.route('/portfolio/add_record/<portfolio>/<key>/<record>',method='POST')
-def add_record_to_portfolio(key,record,portfolio):
-    r = requests.post(URL_TO_MORRIS_PORTFOLIOS_API+"/decoration/add_record/"+portfolio+"/"+key+"/"+record)
-    return r.text
-@app.route('/portfolio/add_record/<portfolio>/<key>/',method='POST')
+@app.route('/portfolio/add_record/<portfolio>/<key>',method='POST')
 def add_record_to_portfolio(key,portfolio):
-    r = requests.post(URL_TO_MORRIS_PORTFOLIOS_API+"/decoration/add_record/"+portfolio+"/"+key+"/")
+    r = requests.post(URL_TO_MORRIS_PORTFOLIOS_API+"/decoration/add_record/"+portfolio+"/"+key)
     return r.text
 # End Portfolio work
 
@@ -88,14 +84,13 @@ def add_record_to_portfolio(key,portfolio):
 def get_tags():
     r = requests.get(URL_TO_MORRIS_TAGS_API+"/decoration")
     d = ast.literal_eval(r.text)
-    print "d = "+repr(d)
     return d
 
 @app.route('/tag/<name>', method='GET')
 def get_specific_tags(name):
-    print "Calling to get tag "+name
-    r = requests.get(URL_TO_MORRIS_TAGS_API+"/decoration/"+name)
-    print "r.text = "+r.text
+    print "AAA" + name
+    r = requests.get(URL_TO_MORRIS_TAGS_API+"/content/"+name)
+    print "BBB" + r.text
     return r.text
 
 @app.route('/tag/<name>', method='POST')
@@ -111,19 +106,12 @@ def get_export_tag():
 
 @app.route('/tag_records', method='GET')
 def get_records():
-    print "XXX"
     r = requests.get(URL_TO_MORRIS_TAGS_API+"/decoration_records")
-    print "r.text = "+r.text
     return r.text
 
-@app.route('/tag/add_record/<tag>/<key>/<record>',method='POST')
-def add_record_to_tag(tag,key,record):
-    r = requests.post(URL_TO_MORRIS_TAGS_API+"/decoration/add_record/"+tag+"/"+key+"/"+record)
-    return r.text
-
-@app.route('/tag/add_record/<tag>/<key>/',method='POST')
+@app.route('/tag/add_record/<tag>/<key>',method='POST')
 def add_record_to_tag(tag,key):
-    r = requests.post(URL_TO_MORRIS_TAGS_API+"/decoration/add_record/"+tag+"/"+key+"/")
+    r = requests.post(URL_TO_MORRIS_TAGS_API+"/decoration/add_record/"+tag+"/"+key)
     return r.text
 
 # BEGIN SERVER-SIDE CALLS for Morris Content Manager

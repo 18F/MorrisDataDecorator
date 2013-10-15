@@ -38,6 +38,9 @@ object or create a portfolio containing an object.
         decorations_out = self.d.getDecorationsForContent(content_record_0)
         self.assertEqual(decorations_out[0],decoration_0)
         self.assertEqual(decorations_out[1],decoration_1)
+
+        decorations_empty = self.d.getDecorationsForContent(content_record_0+"razmataz")
+        self.assertEqual(decorations_empty,[])
         contents_out = self.d.getContentsForDecoration(decoration_0)
         self.assertEqual(contents_out[0],content_record_0)
 
