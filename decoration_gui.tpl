@@ -42,32 +42,39 @@
         <div class="col-md-8" >
           <div class="row">
             <div class="col-md-8 droppablerecord" id="content_area">
-           <img class="col-md-8" src="/imgs/William_Morris_design_for_Trellis_wallpaper_1862.jpg" alt="William_Morris_design_for_Trellis_wallpaper_1862">
             </div>
           </div>
           <div class="row">
-            <div class="col-md-6" id="control_area">
+            <div class="col-md-4" id="control_area">
 	    	 <button type="button" class="btn btn-like" id="next_button">Next</button>
 		 <button type="button" class="btn btn-dislike" id="prev_button">Prev</button>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
 	    	 <button type="button" class="btn btn-like" id="like_button">Like</button>
                  <span id="vote_quantity"> </span>
 		 <button type="button" class="btn btn-dislike" id="dislike_button">Dislike</button>
             </div>
           </div>
+          <div class="row">
+            <div class="col-md-4" id="current_decorations">
+                <p>Tags For This Record</p>
+                 <ul id="current_tag_list"></ul>
+            </div>
+            <div class="col-md-4">
+                <p>Portfolios For This Record</p>
+                 <ul id="current_portfolio_list"></ul>
+            </div>
+          </div>
           <div class="row" id="portfolios">
-            <div class="col-md-6"> 
-               <div>All Portfolios</div>
+            <div class="col-md-8"> 
 	    	 <button type="button" class="btn btn-like" id="add_portfolio_button">Add Portfolio</button>
 	    	 <input type="text" id="new_portfolio_name" placeholder="New Portfolio Name...">
+               <div>All Portfolios</div>
                  <ul id="portfolio_list"></ul>
             </div>
           </div>
         </div>
         <div class="col-md-4" id="tags">
-                <p>Tags For This Record</p>
-                 <ul id="current_tag_list"></ul>
 	    	 <button type="button" class="btn btn-like" id="add_tag_button">Add Tag</button>
 	    	 <input type="text" id="new_tag_name" placeholder="New Tag...">
                  <p>All Tags</p>
@@ -94,40 +101,18 @@ function set_vote_value(data) {
        $('#vote_quantity').html(decodeURIComponent(data));
 }
 var global_portfolios = [];
-function set_portfolios(data) {
-      var names = data['data']
-      global_portfolios = names;
-      var ul = $('#portfolio_list');
-      ul.empty();
-      $.each(names, function (idx, elem) {
-         ul.append('<div class="mydraggable droppableportfolio">' + elem + "</div>");
-         $('.mydraggable').draggable({ revert: true });
-         $('.droppableportfolio' ).droppable({
-           tolerance: "touch",
-           drop: function(event, ui) {
-                 var portfolio = $(this).text();
-                 var key = currentKeyToContent;
-                 $.post("/portfolio/add_record/"+portfolio+"/"+key
-                 ).fail(function() { alert("The addition of that record to that portfolio failed."); });
-           }
-    });
-      })
-}
-
-var global_tags = [];
-function set_tags(selector,data) {
+function set_decorations(selector,data,decotype) {
       var names = data;
       var ul = $(selector);
       ul.empty();
       $.each(names, function (idx, elem) {
-         ul.append('<div class="mydraggable droppabletag">' + elem + "</div>");
+         ul.append('<span class="mydraggable droppableportfolio">' + elem + "</span>&nbsp;");
          $('.mydraggable').draggable({ revert: true });
-         $('.droppabletag' ).droppable({
+         $('.droppableportfolio' ).droppable({
            tolerance: "touch",
            drop: function(event, ui) {
-                 var tag = $(this).text();
-                 var record = ""
-                 $.post("/tag/add_record/"+tag+"/"+key
+                 var text = $(this).text();
+                 $.post("/"+decotype+"/add_record/"+text+"/"+currentKeyToContent
                  ).fail(function() { alert("The addition of that record to that portfolio failed."); });
            }
     });
@@ -167,14 +152,18 @@ function dislike_handler() {
 
 function get_portfolio_list() {
        $.get("/portfolio",{},
-           set_portfolios
+           function (data) {
+                var names = data['data'];
+                global_portfolios = names;
+                set_decorations('#portfolio_list',names,'portfolio');
+           }
           ).fail(function() { alert("Call to portfolio content manager failed."); });
 }
 
 function get_tag_list() {
        $.get("/tag",{},
            function (data) { 
-                set_tags('#tag_list',data['data']);
+                set_decorations('#tag_list',data['data'],'tag');
                 global_tags = data['data'];
            }
           ).fail(function() { alert("Call to tag content manager failed."); });
@@ -184,9 +173,18 @@ function get_current_tag_list(name) {
        $.get("/tag/"+name,{},
            function (data) { 
                datax = jQuery.parseJSON( data );
-               set_tags('#current_tag_list',datax['data']);
+               set_decorations('#current_tag_list',datax['data'],'tag');
            }
           ).fail(function() { alert("Call to tag content manager failed."); });
+}
+
+function get_current_portfolio_list(name) {
+       $.get("/portfolio/"+name,{},
+           function (data) { 
+               datax = jQuery.parseJSON( data );
+               set_decorations('#current_portfolio_list',datax['data'],'tag');
+           }
+          ).fail(function() { alert("Call to portfolio content manager failed."); });
 }
 
 function add_portfolio_handler() {
@@ -223,20 +221,13 @@ function isPortfolio(txt) {
            tolerance: "touch",
            drop: function(event, ui) {
                  var text = ui.draggable.text();
-// Is this is a portfolio or a tag?
                  var portfolio = isPortfolio(text);
-                 alert("Content Area portfolio = "+portfolio);
                  var key = currentKeyToContent;
-                 if (portfolio) {
-                     $.post("/portfolio/add_record/"+text+"/"+key
+                 var deco = (portfolio) ? "portfolio" : "tag";
+                 $.post("/"+deco+"/add_record/"+text+"/"+key,
+                       function () { process_record_request(key);}
                      ).fail(function() { alert("The addition of that record to the content_area portfolio failed."); });
-                 } else {
-                     $.post("/tag/add_record/"+text+"/"+key,
-                        get_current_tag_list(currentKeyToContent)
-                     ).fail(function() { alert("The addition of that record to the content_area tag failed."); });
-
-                 }
-           }
+            }
     });
 
     $( ".droppablerecord" ).draggable({ revert: true });
@@ -250,8 +241,8 @@ function isPortfolio(txt) {
        $.get("/record_integer/"+TAG_FOR_LIKES+"/"+data,{ },
            set_vote_value
           ).fail(function() { alert("The search failed in some way; please try something else."); });
-       alert("About to call get_current_tag_list"+currentKeyToContent);
        get_current_tag_list(currentKeyToContent);
+       get_current_portfolio_list(currentKeyToContent);
     }
 
 function get_initial_record() {

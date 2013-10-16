@@ -34,9 +34,7 @@ def read_decoration(name):
 
 @app.route('/content/<name>', method='GET')
 def read_decoration(name):
-    print "records,name = "+name
     records = md.getDecorationsForContent(name)
-    print "records = "+repr(records)
     return {'data': records}
 
 @app.route('/decoration/<name>', method='POST')

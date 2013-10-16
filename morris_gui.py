@@ -55,8 +55,14 @@ def get_create_record(tag,key,delta):
 def get_portfolios():
     r = requests.get(URL_TO_MORRIS_PORTFOLIOS_API+"/decoration")
     d = ast.literal_eval(r.text)
-    print "d = "+repr(d)
     return d
+
+@app.route('/portfolio/<name>', method='GET')
+def get_specific_tags(name):
+    print "CCC" + name
+    r = requests.get(URL_TO_MORRIS_PORTFOLIOS_API+"/content/"+name)
+    print "DDD" + r.text
+    return r.text
 
 @app.route('/portfolio/<name>', method='POST')
 def get_create_portfolio(name):
