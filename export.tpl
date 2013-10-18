@@ -50,10 +50,10 @@
       get_data();
    }
 
-   load_text_area('#export-portfolio-assocations-area',"/portfolio_records");
+   load_text_area('#export-portfolio-assocations-area',"/portfolio_records_with_cd/url");
    load_text_area('#export-portfolio-area',"/portfolio_export");
 
-   load_text_area('#export-tag-associations-area',"/tag_records");
+   load_text_area('#export-tag-associations-area',"/tag_records_with_cd/url");
    load_text_area('#export-tag-area',"/tag_export");
   
  </script>

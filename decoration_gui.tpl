@@ -94,7 +94,9 @@ var currentKeyToContent;
 var TAG_FOR_LIKES = "vote"
 
 function set_html_content(data) {
-       $('#content_area').html(decodeURIComponent(data));
+       $('#content_area').html(
+          '<iframe height="400" width="600" src="'+decodeURIComponent(data)+'"/>'
+        );
 }
 
 function set_vote_value(data) {

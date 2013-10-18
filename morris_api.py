@@ -2,6 +2,7 @@ from bottle import Bottle, template,request,TEMPLATE_PATH,static_file,response
 
 import morris
 import StringIO
+import sys
 
 app = Bottle()
 
@@ -27,6 +28,16 @@ def export_all_decorations_as_csv():
 def export_all_records_as_csv():
     return md.exportDecorationsToContentsAsCSV()
 
+@app.route('/decoration_records_with_client_data/<columns>', method='GET')
+def export_all_records_as_csv_with_client_data(columns):
+    cols = columns.split(',')
+    return md.exportDecorationsToContentsAsCSVWithClientDataColumns(cols)
+
+@app.route('/content_records_with_client_data/<columns>', method='GET')
+def export_all_records_as_csv_with_client_data(columns):
+    cols = columns.split(',')
+    return md.exportContentsToDecorationsAsCSVWithClientDataColumns(cols)
+
 @app.route('/decoration/<name>', method='GET')
 def read_decoration(name):
     records = md.getContentsForDecoration(name)
@@ -42,6 +53,26 @@ def create_decoration(name):
     success = str(md.createDecorations([name]))
     return success
 
+@app.route('/content/<name>', method='POST')
+def create_content(name):
+    success = str(md.createContents([name]))
+    return success
+
+@app.route('/decoration/add_client_data/<decoration>/<data_name>/<cd:path>', method='POST')
+def add_client_data_decoration(decoration,data_name,cd):
+    md.addClientDataDecoration(decoration,data_name,cd)
+    return {}
+
+@app.route('/content/add_client_data/<content>/<data_name>/<cd:path>', method='POST')
+def add_client_data_content(content,data_name,cd):
+    md.addClientDataContent(content,data_name,cd)
+    return {}
+
+@app.route('/test/add_client_data/<content>/<data_name>/<cd:path>', method='POST')
+def test_content(content,data_name,cd):
+    md.addClientDataContent(content,data_name,"spud")
+    return {}
+
 @app.route('/decoration/add_record/<decoration>/<key>',method='POST')
 def add_record_to_decoration(decoration,key):
     return md.associateDecorationWithContentSingle(decoration,key)
@@ -49,6 +80,7 @@ def add_record_to_decoration(decoration,key):
 @app.route('/decoration/<name>', method='DELETE')
 def delete_decoration( name="Mystery Recipe" ):
     return { "success" : False, "error" : "delete not implemented yet" }
+
 #END DECORATION SECTION
 
 #BEGIN MORRIS CONTENT MANAGEMENT
@@ -64,6 +96,7 @@ def get_record_integer(tag,key):
 def get_record_integer(tag,key,delta):
     return md.changeRecordInteger(tag,key,delta)
 #END MORRIS CONTENT MANAGEMENT
+
 
 
 

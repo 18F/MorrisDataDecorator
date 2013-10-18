@@ -15,7 +15,7 @@
     <ul class="nav navbar-nav">
       <li id="decorate_nav"><a href="/gui-decorate">Decorate</a></li>
       <li id="export_nav"><a href="/gui-export">Export</a></li>
-      <li id="import_nav"><a href="/gui-export">Import</a></li>
+      <li id="import_nav"><a href="/gui-import">Import</a></li>
       <li class="dropdown">
         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
         <ul class="dropdown-menu">

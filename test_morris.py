@@ -3,7 +3,8 @@ import morris
 
 decoration_0 = "ThisIsADecoration"    
 decoration_1 = "This is a second decoration"    
-content_record_0= "http://yoyodyne"
+content_record_0 = "http://yoyodyne"
+content_record_1 = "http://bogodyne"
 
 class TestMorrisDecorator(unittest.TestCase):
     def setUp(self):
@@ -57,12 +58,54 @@ object or create a portfolio containing an object.
     def test_export_decorations_to_contents(self):
         self.d.associateDecorationWithContentSingle(decoration_0,content_record_0)
         decorations_to_contents = self.d.exportDecorationsToContentsAsCSV()
-        self.assertTrue(decorations_to_contents is not None)
+        expectedResult = """Decoration,Content
+"ThisIsADecoration","['http://yoyodyne']"
+"""
+        self.assertEqual(expectedResult,decorations_to_contents)
 
     def test_export_contents_to_deocrations(self):
         self.d.associateDecorationWithContentSingle(decoration_0,content_record_0)
-        contents_to_decorations = self.d.exportDecorationsToContentsAsCSV()
-        self.assertTrue(contents_to_decorations is not None)
+        contents_to_decorations = self.d.exportContentsToDecorationsAsCSV()
+        expectedResult = """Content,Decoration
+"http://yoyodyne","['ThisIsADecoration']"
+"""
+        self.assertEqual(expectedResult,contents_to_decorations)
+
+    def test_export_decorations_to_contents_with_client_data(self):
+        self.d.associateDecorationWithContentSingle(decoration_0,content_record_0)
+        cd = "spud"
+        data_name = "clientdata1"
+        self.d.addClientDataDecoration(decoration_0,data_name,cd)
+        self.d.addClientDataContent(content_record_0,data_name,cd)
+        decorations_to_contents = self.d.exportDecorationsToContentsAsCSVWithClientDataColumns([data_name])
+        expectedResult = """Decoration,Content,"clientdata1"
+"ThisIsADecoration","['http://yoyodyne']","spud"
+"""
+        self.assertEqual(expectedResult,decorations_to_contents)
+
+    def test_export_contents_to_deocrations_with_client_data(self):
+        self.d.associateDecorationWithContentSingle(decoration_0,content_record_0)
+        self.d.associateDecorationWithContentSingle(decoration_0,content_record_1)
+        cd = "spud"
+        data_name = "clientdata1"
+        self.d.addClientDataDecoration(decoration_0,data_name,cd)
+        self.d.addClientDataContent(content_record_0,data_name,cd)
+        self.d.addClientDataContent(content_record_1,data_name,cd+"1")
+        contents_to_decorations = self.d.exportContentsToDecorationsAsCSVWithClientDataColumns([data_name])
+        expectedResult = """Content,Decoration,"clientdata1"
+"http://bogodyne","['ThisIsADecoration']","spud1"
+"http://yoyodyne","['ThisIsADecoration']","spud"
+"""
+        self.assertEqual(expectedResult,contents_to_decorations)
+
+    def test_can_add_client_data(self):
+        cd = "spud"
+        data_name = "clientdata1"
+        self.d.addClientDataDecoration(decoration_0,data_name,cd)
+        self.assertEqual(cd,self.d.getClientDataDecoration(decoration_0,data_name))
+        self.d.addClientDataContent(content_record_0,data_name,cd)
+        self.assertEqual(cd,self.d.getClientDataContent(content_record_0,data_name))
+
 
 
 # BEGIN tests concerning scoring

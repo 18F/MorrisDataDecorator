@@ -22,6 +22,13 @@ class TestMorrisContentManager(unittest.TestCase):
         
     def test_getHTML_seems_to_return_something(self):
         self.assertTrue(len(self.cm.getHTML(self.key)) > 0)
+
+    def test_load_urls_from_text(self):
+        text = "a\nb\n"
+        self.cm.loadUrlsFromText(text)
+
+        self.assertEqual(len(self.cm.keys),2)
+
         
 
 if __name__ == '__main__':

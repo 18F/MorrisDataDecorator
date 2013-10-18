@@ -35,6 +35,12 @@ def get_useful_record():
     r = cm.getAUsefulKey()
     return r
 
+@app.route('/cm-uploadtext', method='POST')
+def upload_text():
+    val = request.forms.get('data')
+    print "val ="+repr(val)
+    r = cm.loadUrlsFromText(val)
+
 
 
 

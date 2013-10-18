@@ -3,6 +3,7 @@ from bottle import Bottle, run, template,request,TEMPLATE_PATH,static_file,respo
 import morris_config 
 import requests
 import ast
+import urllib
 
 app = Bottle()
 
@@ -25,6 +26,11 @@ def present_decorator():
 def present_decorator():
     navbar = template('navbar.tpl')
     return template('export.tpl',navbar=navbar)
+
+@app.route('/gui-import', method='GET')
+def present_decorator():
+    navbar = template('navbar.tpl')
+    return template('import.tpl',navbar=navbar)
 
 def pass_through_to_api(r):
     # This is inefficient, but I can't seem to get Bottle to
@@ -59,9 +65,7 @@ def get_portfolios():
 
 @app.route('/portfolio/<name>', method='GET')
 def get_specific_tags(name):
-    print "CCC" + name
     r = requests.get(URL_TO_MORRIS_PORTFOLIOS_API+"/content/"+name)
-    print "DDD" + r.text
     return r.text
 
 @app.route('/portfolio/<name>', method='POST')
@@ -79,6 +83,11 @@ def get_records():
     r = requests.get(URL_TO_MORRIS_PORTFOLIOS_API+"/decoration_records")
     return r.text
 
+@app.route('/portfolio_records_with_cd/<columns>', method='GET')
+def get_records(columns):
+    r = requests.get(URL_TO_MORRIS_PORTFOLIOS_API+"/content_records_with_client_data/"+columns)
+    return r.text
+
 @app.route('/portfolio/add_record/<portfolio>/<key>',method='POST')
 def add_record_to_portfolio(key,portfolio):
     r = requests.post(URL_TO_MORRIS_PORTFOLIOS_API+"/decoration/add_record/"+portfolio+"/"+key)
@@ -94,14 +103,11 @@ def get_tags():
 
 @app.route('/tag/<name>', method='GET')
 def get_specific_tags(name):
-    print "AAA" + name
     r = requests.get(URL_TO_MORRIS_TAGS_API+"/content/"+name)
-    print "BBB" + r.text
     return r.text
 
 @app.route('/tag/<name>', method='POST')
 def get_create_tag(name):
-    print "Calling to post tag"
     r = requests.post(URL_TO_MORRIS_TAGS_API+"/decoration/"+name)
     return r.text
 
@@ -113,6 +119,11 @@ def get_export_tag():
 @app.route('/tag_records', method='GET')
 def get_records():
     r = requests.get(URL_TO_MORRIS_TAGS_API+"/decoration_records")
+    return r.text
+
+@app.route('/tag_records_with_cd/<columns>', method='GET')
+def get_records(columns):
+    r = requests.get(URL_TO_MORRIS_TAGS_API+"/decoration_records_with_client_data/"+columns)
     return r.text
 
 @app.route('/tag/add_record/<tag>/<key>',method='POST')
@@ -142,6 +153,25 @@ def get_prev_record(key):
 @app.route('/cm-useful', method='GET')
 def get_useful_record():
     return requests.get(URL_TO_MORRIS_CM_API+"/cm-useful").text
+
+@app.route('/cm-uploadtext', method='POST')
+def get_useful_record():
+    val = request.forms.get('data')
+    requests.post(URL_TO_MORRIS_CM_API+"/cm-uploadtext",{'data' : val})
+    # now, we want to add the the urls so uploaded to the client data for
+    # the main data itself...
+    # this the same computation in morris_cm.py --- this is somewhat 
+    # unreliable...this should be placed in morris_cm.py and exposed through
+    # the API to be reused here.
+    urls = val.split('\n') 
+    if "" in urls: urls.remove("")
+    i = 0
+    for u in urls:
+        requests.post(URL_TO_MORRIS_TAGS_API+"/content/add_client_data/"+str(i)+"/url/"+urllib.quote_plus(u))
+        requests.post(URL_TO_MORRIS_PORTFOLIOS_API+"/content/add_client_data/"+str(i)+"/url/"+urllib.quote_plus(u))
+        requests.post(URL_TO_MORRIS_TAGS_API+"/content/"+str(i))
+        requests.post(URL_TO_MORRIS_PORTFOLIOS_API+"/content/"+str(i))
+        i = i + 1
 
 # END SERVER-SIDE CALLS for Morris Content Manager
 

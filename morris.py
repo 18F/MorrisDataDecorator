@@ -1,6 +1,7 @@
 # Morris is a decorator system for decorating objects that may not be under full control of the 
 # implementor of the Morris system.  Decorations including scoring, tagging, and creating portfolios.
 
+import sys
 
 class MorrisDecorator:
     """Morris is a decorator system for decorating content objects that may not be under full control of the 
@@ -15,9 +16,24 @@ content keys to find the decorations.
 Note that you can create unassociated content; that is, you can create a decoration which 
 is not attached to any content, and you can declare content that has no decorations (though
 presumably there will be undeclared content as well.)
+
+Note that the ClientData is meant to be "uninterpreted" by the Morris system.  That is, it has 
+no meaning, it is merely a convenient place to store Data on behalf of the Client.  However, it 
+is echoed back in both the CSV export and through the API, so it is in particularly valuable 
+to the system which also uses the ContentManagement system.
+
+The "Integer" system is somewhat different.  It is not intended to be "client data", in that 
+it is typed, initialized to zero, and is modified by direct delta incrementation or decrementation.
+This is in fact the only justification for making it distinct from the ClientData.
         """
-        self.decorationToContent = {}
-        self.contentToDecoration = {}
+# decorationToContent maps strings ("decorations") to list keys managed by the morris_cm module (optionally)
+        self.decorationToContent = {}    # A dictionary of strings to content keys
+        self.decorationToClientData = {} # A dictionary of dictionaries of strings
+        self.decorationToIntegers = {}   # A dictionary of dictionaries of integers
+
+        self.contentToDecoration = {}    # A dictionary of strings to decoration keys
+        self.contentToClientData = {}    # A dictionary of dictionaries of strings
+        self.contentToIntegers = {}      # A dictionary of dictionaries of integers
 
 # Not sure what to do about this, really needs to be generalized as a Decoration.
         self.integerTagMaps = {}
@@ -61,6 +77,22 @@ presumably there will be undeclared content as well.)
     def getAllContents(self):
         return self.contentToDecorations.keys()
 
+    def addClientDataDecoration(self,decoration,data_name,cd):
+        if (decoration not in self.decorationToClientData):
+            self.decorationToClientData[decoration] = {}
+        self.decorationToClientData[decoration][data_name] = cd
+
+    def getClientDataDecoration(self,decoration,data_name):
+        return self.decorationToClientData[decoration][data_name]
+
+    def addClientDataContent(self,content,data_name,cd):
+        if (content not in self.contentToClientData):
+            self.contentToClientData[content] = {}
+        self.contentToClientData[content][data_name] = cd
+
+    def getClientDataContent(self,content,data_name):
+        return self.contentToClientData[content][data_name]
+
     def exportDecorationsAsCSV(self):
         """
     Export the decorations only without the contents
@@ -81,7 +113,7 @@ presumably there will be undeclared content as well.)
             retval = retval + '\"{0}\"\n'.format(p)
         return retval
 
-    def exportDecorationsToContentsAsCSV(self):
+    def exportContentsToDecorationsAsCSV(self):
         """
     Export the entire datastore as a CSV file 
         """
@@ -90,10 +122,9 @@ presumably there will be undeclared content as well.)
         for c in self.contentToDecoration.keys():
             d = self.contentToDecoration[c]
             retval = retval + '\"{0}\",\"{1}\"\n'.format(c,d)
-        print "retval from Export = "+retval
         return retval
 
-    def exportContentsToDecorationsAsCSV(self):
+    def exportDecorationsToContentsAsCSV(self):
         """
     Export the entire datastore as a CSV file 
         """
@@ -104,6 +135,38 @@ presumably there will be undeclared content as well.)
             retval = retval + '\"{0}\",\"{1}\"\n'.format(d,c)
         return retval
 
+    def exportContentsToDecorationsAsCSVWithClientDataColumns(self,columns):
+        """
+    Export the entire datastore as a CSV file, adding columns from ClientData where it exists.
+        """
+        retval = ""
+        retval = retval + ",".join(["Content","Decoration"]+['\"{0}\"'.format(c) for c in columns])+"\n"
+        for c in self.contentToDecoration.keys():
+            d = self.contentToDecoration[c]
+            retval = retval + '\"{0}\",\"{1}\"'.format(c,d)
+            for col in columns:
+                retval = retval + ","
+                if (c in self.contentToClientData):
+                    print "c = "+c
+                    retval = retval + '\"{0}\"'.format(self.contentToClientData[c][col])
+            retval = retval + "\n"
+        return retval
+
+    def exportDecorationsToContentsAsCSVWithClientDataColumns(self,columns):
+        """
+    Export the entire datastore as a CSV file, adding columns from ClientData where it exists.
+        """
+        retval = ""
+        retval = retval + ",".join(["Decoration","Content"]+['\"{0}\"'.format(c) for c in columns])+"\n"
+        for d in self.decorationToContent.keys():
+            c = self.decorationToContent[d]
+            retval = retval + '\"{0}\",\"{1}\"'.format(d,c)
+            for col in columns:
+                retval = retval + ","
+                if (d in self.decorationToClientData):
+                    retval = retval + '\"{0}\"'.format(self.decorationToClientData[d][col])
+            retval = retval + "\n"
+        return retval
 
 # I will have to clean this up later!
     def getRecordInteger(self,tag,recordkey):
