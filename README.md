@@ -3,13 +3,6 @@ MorrisDataDecorator
 
 Python web app that let's you upload URLs, tag, collect into portfolios, vote, and export the results as .csv files.
 
-This project depends up:
-
-Bottle
-requests
-ast (Possibly this is a builtin?)
-
-I would like to figure out how to package those up, but until I do, just make sure they are both installed.
 
 
 Introduction
@@ -54,6 +47,58 @@ as writing on a napkin, and plan to copy your work from the napkin onto somethin
 
 In summary, it is a project in very early stage of developement, and opportunities to improve it abound.
 
+Installing
+------------------------
+
+This project depends on the python projects:
+
+* Bottle
+* requests
+
+I would like to figure out how to package those up, but until I do, just make sure they are both installed.
+In fact I have been 7 years away from running open-source projects, and am open to assistance on how 
+to make this easier to install---please blast me or assist me.
+
+I'm using Python 2.7, but it might work under 3.x.
+
+Here is a basic set of instructions, which are as yet unvetted:
+* Install Bottle
+* Install requests
+* execute: python test_morris.py
+* execute: python test_morris_api.py
+* exectue: python test_morris_cm.py
+
+If any of the tests fail, you had better email me or figure out why.  Note that to test the API
+I am actually spawning Bottle in a thread in order to make a realistic web service call---if the port 
+is in use, this will fail for that reason.
+
+If you are ready:
+* execute: bash run_all.bash
+* execute: python run_morris_gui_via_bottle.py
+
+Then point a browser at:
+http://localhost:8080
+
+which is being listened to by Bottle.
+
+Go to the Import tab, and past in a list of URLs on separate lines that you would like to 
+decorate.  This is a particular beautiful set of designs by William Morris which are all from 
+the freely reusable from wikimedia:
+
+http://upload.wikimedia.org/wikipedia/commons/b/b4/William_Morris_design_for_Trellis_wallpaper_1862.jpg
+http://upload.wikimedia.org/wikipedia/commons/3/33/Morris_Windrush_textile_design_1881-83.jpg
+http://upload.wikimedia.org/wikipedia/commons/0/0a/Morris_Redcar_carpet_design_c_1881-85.jpg
+http://upload.wikimedia.org/wikipedia/commons/8/84/Morris_Bluebell_printed_fabric_design_detail.jpg
+http://upload.wikimedia.org/wikipedia/commons/5/5a/Morris_Little_Flower_carpet_design_detail.jpg
+http://upload.wikimedia.org/wikipedia/commons/4/44/Morris_Tulip_and_Willow_design_1873.jpg
+http://upload.wikimedia.org/wikipedia/commons/c/cf/Morris_Wey_printed_textile_design_c_1883.jpg
+
+Then go to the Decorate tab and start adding portfolios and tags.  You can drag-n-drop the portfolios and 
+tags onto the content, and the content onto the portfolios and tags.  It doesn't work very smoothly yet.
+
+Then, go to the Export tag, where you will see your data in the form of comma separate value files.  Since
+there is no persistence, you should save these files as soon as they are valuable to you, and not rely 
+on the in-memory persistence.
 
 Why is it called Morris?
 ------------------------
