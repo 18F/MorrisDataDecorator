@@ -16,6 +16,10 @@ URL_TO_MORRIS_VOTES_API = "http://localhost:" + str(morris_config.BOTTLE_DEORATO
 def trivtest():
     return "true"
 
+@app.route('/js/<filename>')
+def server_static(filename):
+    return static_file(filename, root="./js/")
+
 @app.route('/', method='GET')
 @app.route('/gui-decorate', method='GET')
 def present_decorator():

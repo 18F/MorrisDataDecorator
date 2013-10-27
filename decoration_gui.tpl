@@ -83,128 +83,20 @@
 
         </div>
       </div>
+
   <script>
-
   $('#decorate_nav').addClass("active");
+  </script>
 
-// This is really a global variable, holding the key representing
-// the record currently visible.
-var currentKeyToContent;
+<script src="js/handlers.js"></script>>
 
-var TAG_FOR_LIKES = "vote"
+<script>
 
-function set_html_content(data) {
-       $('#content_area').html(
-          '<iframe height="400" width="600" src="'+decodeURIComponent(data)+'"/>'
-        );
-}
+var portfolio_url = "/portfolio";
+var tag_url = "/tag";
 
-function set_vote_value(data) {
-       $('#vote_quantity').html(decodeURIComponent(data));
-}
-var global_portfolios = [];
-function set_decorations(selector,data,decotype) {
-      var names = data;
-      var ul = $(selector);
-      ul.empty();
-      $.each(names, function (idx, elem) {
-         ul.append('<span class="mydraggable droppableportfolio">' + elem + "</span>&nbsp;");
-         $('.mydraggable').draggable({ revert: true });
-         $('.droppableportfolio' ).droppable({
-           tolerance: "touch",
-           drop: function(event, ui) {
-                 var text = $(this).text();
-                 $.post("/"+decotype+"/add_record/"+text+"/"+currentKeyToContent
-                 ).fail(function() { alert("The addition of that record to that portfolio failed."); });
-           }
-    });
-      })
-}
-
-function set_current_key(data) {
-     currentKeyToContent = data;
-     $.get("/cm-html/"+currentKeyToContent,{ },
-         set_html_content
-      ).fail(function() { alert("cm-html failed in some way; please try something else."); });
-}
-
-function next_handler() {
-       $.get("/cm-next/"+currentKeyToContent,{},
-           process_record_request
-          ).fail(function() { alert("Call to cm-next content manager failed."); });
-}
-
-function prev_handler() {
-       $.get("/cm-prev/"+currentKeyToContent,{},
-           process_record_request
-          ).fail(function() { alert("Call to cm-prev content manager failed."); });
-}
-
-function like_handler() {
-       $.post("/record_integer/"+TAG_FOR_LIKES+"/"+currentKeyToContent+"/"+"1",{},
-              set_vote_value
-          ).fail(function() { alert("Call to change content manager failed."); });
-}
-
-function dislike_handler() {
-       $.post("/record_integer/"+TAG_FOR_LIKES+"/"+currentKeyToContent+"/"+"-1",{},
-              set_vote_value
-          ).fail(function() { alert("Call to change content manager failed."); });
-}
-
-function get_portfolio_list() {
-       $.get("/portfolio",{},
-           function (data) {
-                var names = data['data'];
-                global_portfolios = names;
-                set_decorations('#portfolio_list',names,'portfolio');
-           }
-          ).fail(function() { alert("Call to portfolio content manager failed."); });
-}
-
-function get_tag_list() {
-       $.get("/tag",{},
-           function (data) { 
-                set_decorations('#tag_list',data['data'],'tag');
-                global_tags = data['data'];
-           }
-          ).fail(function() { alert("Call to tag content manager failed."); });
-}
-
-function get_current_tag_list(name) {
-       $.get("/tag/"+name,{},
-           function (data) { 
-               datax = jQuery.parseJSON( data );
-               set_decorations('#current_tag_list',datax['data'],'tag');
-           }
-          ).fail(function() { alert("Call to tag content manager failed."); });
-}
-
-function get_current_portfolio_list(name) {
-       $.get("/portfolio/"+name,{},
-           function (data) { 
-               datax = jQuery.parseJSON( data );
-               set_decorations('#current_portfolio_list',datax['data'],'tag');
-           }
-          ).fail(function() { alert("Call to portfolio content manager failed."); });
-}
-
-function add_portfolio_handler() {
-        var name = $('#new_portfolio_name').val();
-       $.post("/portfolio/"+name,{},
-              get_portfolio_list
-          ).fail(function() { alert("Call to change content manager failed."); });
-}
-
-function add_tag_handler() {
-        var name = $('#new_tag_name').val();
-       $.post("/tag/"+name,{},
-              get_tag_list
-          ).fail(function() { alert("Call to change content manager failed."); });
-       $.get("/tag/"+name,{},
-           function (data) { set_tags('#current_tag_list',data);}
-          ).fail(function() { alert("Call to change content manager failed."); });
-}
+HANDLER_NAMESPACE_OBJECT.portfolio_url = portfolio_url;
+HANDLER_NAMESPACE_OBJECT.tag_url = tag_url;
 
 // BEGIN set up click handlers
 $('#next_button').click(next_handler);
@@ -215,9 +107,9 @@ $('#add_portfolio_button').click(add_portfolio_handler);
 $('#add_tag_button').click(add_tag_handler);
 // END   set up click handlers
 
-function isPortfolio(txt) {
-    return ($.inArray(txt, global_portfolios) != -1);
-}
+    get_initial_record();
+    get_portfolio_list();
+    get_tag_list();
 
     $( ".droppablerecord" ).droppable({
            tolerance: "touch",
@@ -225,39 +117,16 @@ function isPortfolio(txt) {
                  var text = ui.draggable.text();
                  var portfolio = isPortfolio(text);
                  var key = currentKeyToContent;
-                 var deco = (portfolio) ? "portfolio" : "tag";
-                 $.post("/"+deco+"/add_record/"+text+"/"+key,
-                       function () { process_record_request(key);}
+                 var deco = (portfolio) ? HANDLER_NAMESPACE_OBJECT.portfolio_url
+		                        : HANDLER_NAMESPACE_OBJECT.tag_url;
+                 $.post(deco+"/add_record/"+text+"/"+key,
+			function () { process_record_request(key);}
                      ).fail(function() { alert("The addition of that record to the content_area portfolio failed."); });
             }
-    });
+	});
 
     $( ".droppablerecord" ).draggable({ revert: true });
 
-    function process_record_request(data) {
-       currentKeyToContent = data;
-       $.get("/cm-html/"+currentKeyToContent,{ },
-           set_html_content
-          ).fail(function() { alert("The search failed in some way; please try something else."); });
-
-       $.get("/record_integer/"+TAG_FOR_LIKES+"/"+data,{ },
-           set_vote_value
-          ).fail(function() { alert("The search failed in some way; please try something else."); });
-       get_current_tag_list(currentKeyToContent);
-       get_current_portfolio_list(currentKeyToContent);
-    }
-
-function get_initial_record() {
-   $.get("/cm-useful", { },
-           process_record_request
-          ).fail(function() { alert("The search failed in some way; please try something else."); });
-    }
-    
-    get_initial_record();
-
-    get_portfolio_list();
-    get_tag_list();
-
-  </script>
+</script>
   </body>
 </html>
