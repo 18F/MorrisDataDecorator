@@ -1,18 +1,39 @@
 from bottle import Bottle, template,request,TEMPLATE_PATH,static_file,response
 
 import morris
+import morris_memory
+import morris_solr
 import StringIO
 import sys
+import logging
+
+logger = logging.getLogger('morris_api_logger')
+hdlr = logging.FileHandler('../logs/morris_api.log')
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+hdlr.setFormatter(formatter)
+logger.addHandler(hdlr) 
+logger.setLevel(logging.INFO)
 
 app = Bottle()
 
 # This is a global we want to remain in memory for all persistence 
 # across all calls...at least for now.
-md = morris.MorrisDecorator()
+# md = morris_memory.InMemoryMorrisDecorator()
+
+SOLR_URL = "http://localhost:8983/solr"
+
+md = morris_solr.SolrMorrisDecorator(SOLR_URL)
 
 @app.route('/ping_morris_api',method='GET')
 def trivtest():
     return "true"
+
+# Obviously, this should be used cautiously.
+# It exists mainly to support testing through the API.
+@app.route('/delete_all',method='GET')
+def delete_all():
+    md.deleteAll()
+
 
 #BEGIN DECORATION SECTION
 @app.route('/decoration', method='GET')
@@ -75,6 +96,7 @@ def test_content(content,data_name,cd):
 
 @app.route('/decoration/add_record/<decoration>/<key>',method='POST')
 def add_record_to_decoration(decoration,key):
+    logger.info("Called add_record_to_decoration({0},{1})".format(decoration,key))
     return md.associateDecorationWithContentSingle(decoration,key)
 
 @app.route('/decoration/<name>', method='DELETE')

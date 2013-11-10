@@ -77,6 +77,7 @@ class SolrMorrisDecorator(AbstractMorrisDecorator):
             print exc_traceback
 
     def associateDecorationWithContentSingle(self,decoration,content):
+        # WARNING! Remove this...this is for debugging
         self.createDecorations([decoration])
         self.createContents([content])
         l = []
