@@ -6,6 +6,7 @@ import morris_solr
 import StringIO
 import sys
 import logging
+import morris_config
 
 logger = logging.getLogger('morris_api_logger')
 hdlr = logging.FileHandler('../logs/morris_api.log')
@@ -22,7 +23,14 @@ app = Bottle()
 
 SOLR_URL = "http://localhost:8983/solr"
 
-md = morris_solr.SolrMorrisDecorator(SOLR_URL)
+# We can also test the InMemory Module here.  I need to 
+# make this more configurable.
+
+
+md = morris_solr.SolrMorrisDecorator(morris_config.SOLR_URL) if\
+    (morris_config.USE_SOLR_AS_PERSISTENCE) else\
+    morris.InMemoryMorrisDecorator()
+
 
 @app.route('/ping_morris_api',method='GET')
 def trivtest():
