@@ -8,7 +8,7 @@ content_record_1 = "http://bogodyne"
 
 class TestMorrisDecorator(unittest.TestCase):
     def setUp(self):
-        self.d = morris.MorrisDecorator()
+        self.d = morris.InMemoryMorrisDecorator()
 
     def test_can_create_decorations_without_content(self):
         """ Test that we can create a decoration without content.  This corresponds to 
@@ -21,36 +21,40 @@ either an tag not yet attached to any content or an empty portfolio.
 
 
     def test_can_associate_decoration_to_content(self):
-        """ Test that we can decorate content (i.e., either attach tag to a content 
-object or create a portfolio containing an object.
-        """
-        self.d.associateDecorationWithContentSingle(decoration_0,content_record_0)
-        decorations_out = self.d.getDecorationsForContent(content_record_0)
-        self.assertEqual(decorations_out[0],decoration_0)
-        contents_out = self.d.getContentsForDecoration(decoration_0)
-        self.assertEqual(contents_out[0],content_record_0)
+         """ Test that we can decorate content (i.e., either attach tag to a content 
+ object or create a portfolio containing an object.
+         """
+         self.d.associateDecorationWithContentSingle(decoration_0,content_record_0)
+         decorations_out = self.d.getDecorationsForContent(content_record_0)
+         self.assertTrue(decoration_0 in decorations_out)
+         contents_out = self.d.getContentsForDecoration(decoration_0)
+         self.assertEqual(contents_out[0],content_record_0)
 
     def test_can_associate_multiple_decorations_to_content(self):
-        """ Test that we can decorate content (i.e., either attach tag to a content 
-object or create a portfolio containing an object.
-        """
-        self.d.associateDecorationWithContentSingle(decoration_0,content_record_0)
-        self.d.associateDecorationWithContentSingle(decoration_1,content_record_0)
-        decorations_out = self.d.getDecorationsForContent(content_record_0)
-        self.assertEqual(decorations_out[0],decoration_0)
-        self.assertEqual(decorations_out[1],decoration_1)
+         """ Test that we can decorate content (i.e., either attach tag to a content 
+ object or create a portfolio containing an object.
+         """
+         self.d.associateDecorationWithContentSingle(decoration_0,content_record_0)
+         self.d.associateDecorationWithContentSingle(decoration_1,content_record_0)
+         decorations_out = self.d.getDecorationsForContent(content_record_0)
+         self.assertEqual(decorations_out[0],decoration_1)
+         self.assertEqual(decorations_out[1],decoration_0)
 
-        decorations_empty = self.d.getDecorationsForContent(content_record_0+"razmataz")
-        self.assertEqual(decorations_empty,[])
-        contents_out = self.d.getContentsForDecoration(decoration_0)
-        self.assertEqual(contents_out[0],content_record_0)
+         decorations_empty = self.d.getDecorationsForContent(content_record_0+"razmataz")
+         self.assertEqual(decorations_empty,[])
+         contents_out = self.d.getContentsForDecoration(decoration_0)
+         self.assertEqual(contents_out[0],content_record_0)
 
     def test_export_decorations(self):
+        self.d.deleteAll()
+        self.d.createDecorations([decoration_0])
         self.d.associateDecorationWithContentSingle(decoration_0,content_record_0)
         all_decorations = self.d.exportDecorationsAsCSV()
         self.assertEqual(all_decorations,"Decoration\n\""+decoration_0+"\"\n")
 
     def test_export_contents(self):
+        self.d.deleteAll()
+        self.d.createContents([content_record_0])
         self.d.associateDecorationWithContentSingle(decoration_0,content_record_0)
         all_contents = self.d.exportContentsAsCSV()
         self.assertEqual(all_contents,"Content\n\""+content_record_0+"\"\n")
@@ -84,17 +88,33 @@ object or create a portfolio containing an object.
         self.assertEqual(expectedResult,decorations_to_contents)
 
     def test_export_contents_to_deocrations_with_client_data(self):
+        self.d.deleteAll()
         self.d.associateDecorationWithContentSingle(decoration_0,content_record_0)
         self.d.associateDecorationWithContentSingle(decoration_0,content_record_1)
         cd = "spud"
         data_name = "clientdata1"
         self.d.addClientDataDecoration(decoration_0,data_name,cd)
         self.d.addClientDataContent(content_record_0,data_name,cd)
+        self.d.addClientDataContent(content_record_1,data_name,"bogosity")
+        contents_to_decorations = self.d.exportContentsToDecorationsAsCSVWithClientDataColumns([data_name])
+        expectedResult = """Content,Decoration,"clientdata1"
+"http://bogodyne","['ThisIsADecoration']","bogosity"
+"http://yoyodyne","['ThisIsADecoration']","spud"
+"""
+        self.assertEqual(expectedResult,contents_to_decorations)
+
+    def test_export_contents_to_deocrations_with_client_data_2(self):
+        self.d.deleteAll()
+        self.d.associateDecorationWithContentSingle(decoration_0,content_record_0)
+        self.d.associateDecorationWithContentSingle(decoration_0,content_record_1)
+        cd = "spud"
+        data_name = "clientdata1"
+        self.d.addClientDataDecoration(decoration_0,data_name,cd)
         self.d.addClientDataContent(content_record_1,data_name,cd+"1")
         contents_to_decorations = self.d.exportContentsToDecorationsAsCSVWithClientDataColumns([data_name])
         expectedResult = """Content,Decoration,"clientdata1"
 "http://bogodyne","['ThisIsADecoration']","spud1"
-"http://yoyodyne","['ThisIsADecoration']","spud"
+"http://yoyodyne","['ThisIsADecoration']"
 """
         self.assertEqual(expectedResult,contents_to_decorations)
 
@@ -102,25 +122,25 @@ object or create a portfolio containing an object.
         cd = "spud"
         data_name = "clientdata1"
         self.d.addClientDataDecoration(decoration_0,data_name,cd)
-        self.assertEqual(cd,self.d.getClientDataDecoration(decoration_0,data_name))
+        self.assertEqual(cd,self.d.getClientDataDecorationName(decoration_0,data_name))
         self.d.addClientDataContent(content_record_0,data_name,cd)
-        self.assertEqual(cd,self.d.getClientDataContent(content_record_0,data_name))
+        self.assertEqual(cd,self.d.getClientDataContentName(content_record_0,data_name))
 
 
 
-# BEGIN tests concerning scoring
-    def test_CanVoteUp(self):
-        d = self.d
-        # Technically speaking this is better suited
-        # to be a function of the content manager,
-        # but we don't want to become dependent on that 
-        # for this test...or do we?
-        v0 = d.getRecordInteger("vote","testkey")
-        rv = d.changeRecordInteger("vote","testkey",1)
-        v1 = d.getRecordInteger("vote","testkey")
-        self.assertEqual(int(v1),(int(v0)+1))
-        self.assertEqual(int(rv),(int(v0)+1))
-# END   tests concerning scoring
+# # BEGIN tests concerning scoring
+#     def test_CanVoteUp(self):
+#         d = self.d
+#         # Technically speaking this is better suited
+#         # to be a function of the content manager,
+#         # but we don't want to become dependent on that 
+#         # for this test...or do we?
+#         v0 = d.getRecordInteger("vote","testkey")
+#         rv = d.changeRecordInteger("vote","testkey",1)
+#         v1 = d.getRecordInteger("vote","testkey")
+#         self.assertEqual(int(v1),(int(v0)+1))
+#         self.assertEqual(int(rv),(int(v0)+1))
+# # END   tests concerning scoring
 
 if __name__ == '__main__':
     unittest.main()
