@@ -34,7 +34,7 @@ function set_decorations(selector,data,decotype) {
       var ul = $(selector);
       ul.empty();
       $.each(names, function (idx, elem) {
-         ul.append('<span style="z-index: 1" class="mydraggable droppableportfolio">' + elem + "</span>&nbsp;");
+          ul.append('<div style="z-index: 1" class="decoration mydraggable droppableportfolio"><img src="./MorrisDataDecorator/imgs/1384165052_cursor_drag_arrow_2.png" alt="drag">' + elem + "</div>&nbsp;");
          $('.mydraggable').draggable({ revert: true });
          $('.droppableportfolio' ).droppable({
            tolerance: "touch",
