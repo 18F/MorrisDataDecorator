@@ -72,6 +72,14 @@ def read_decoration(name):
     records = md.getContentsForDecoration(name)
     return {'data': records}
 
+# I tried to do this as an actual delete, which would make more sense.
+# Unfortunately, I couldn't get bottle to recognize it.
+# This would be much improved if it returned the number deleted.
+@app.post('/delete_decoration/<name>')
+def delete_decoration(name):
+    md.deleteDecorations([name])
+    return { "success" : True, "error" : "" }
+
 @app.route('/content/<name>', method='GET')
 def read_decoration(name):
     records = md.getDecorationsForContent(name)

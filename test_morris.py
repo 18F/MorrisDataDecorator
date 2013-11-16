@@ -1,5 +1,6 @@
 import unittest
 import morris
+import morris_memory
 
 decoration_0 = "ThisIsADecoration"    
 decoration_1 = "This is a second decoration"    
@@ -8,7 +9,7 @@ content_record_1 = "http://bogodyne"
 
 class TestMorrisDecorator(unittest.TestCase):
     def setUp(self):
-        self.d = morris.InMemoryMorrisDecorator()
+        self.d = morris_memory.InMemoryMorrisDecorator()
 
     def test_can_create_decorations_without_content(self):
         """ Test that we can create a decoration without content.  This corresponds to 
@@ -126,7 +127,38 @@ either an tag not yet attached to any content or an empty portfolio.
         self.d.addClientDataContent(content_record_0,data_name,cd)
         self.assertEqual(cd,self.d.getClientDataContentName(content_record_0,data_name))
 
+    def test_can_delete_decorations(self):
+        """
+First add a data decoration, implicitly creating a decoration
+Remove the decoration
+Make sure the association has been removed.
+"""
+        self.d.associateDecorationWithContentSingle(decoration_0,content_record_0)
+        decorations_out = self.d.getDecorationsForContent(content_record_0)
+        self.assertTrue(decoration_0 in decorations_out)
+        contents_out = self.d.getContentsForDecoration(decoration_0)
+        self.assertEqual(contents_out[0],content_record_0)
 
+        # now that we have constructed that, let's delete the decoration
+        # and make sure all the associations are removed.
+        self.d.deleteDecorations([decoration_0])
+        contents_out = self.d.getContentsForDecoration(decoration_0)
+        self.assertEqual(contents_out,[])
+
+        decorations_out = self.d.getDecorationsForContent(content_record_0)
+        self.assertEqual(decorations_out,[])
+
+    def test_get_returns_empty_list_if_uncreated(self):
+        """
+Here we test that we are properly making a distinction between a decoration
+which doesn not exist at all (returning None) the empty results (empty list)
+"""
+        self.d.deleteAll();
+        contentsShouldBeNone = self.d.getContentsForDecoration(decoration_0)
+        self.assertEqual(len(contentsShouldBeNone),0)
+        decorationsShouldBeNone = self.d.getDecorationsForContent(content_record_0)
+        self.assertEqual(len(decorationsShouldBeNone), 0)
+         
 
 # # BEGIN tests concerning scoring
 #     def test_CanVoteUp(self):

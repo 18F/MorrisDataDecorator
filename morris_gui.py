@@ -20,6 +20,14 @@ def trivtest():
 def server_static(filename):
     return static_file(filename, root="./js/")
 
+@app.route('/imgs/<filename>')
+def imgs(filename):
+    return static_file(filename, root="./imgs/")
+
+@app.route('/MorrisDataDecorator/imgs/<filename>')
+def imgs(filename):
+    return static_file(filename, root="./imgs/")
+
 @app.route('/', method='GET')
 @app.route('/gui-decorate', method='GET')
 def present_decorator():
@@ -96,6 +104,11 @@ def get_records(columns):
 def add_record_to_portfolio(key,portfolio):
     r = requests.post(URL_TO_MORRIS_PORTFOLIOS_API+"/decoration/add_record/"+portfolio+"/"+key)
     return r.text
+
+@app.route('/portfolio/delete_decoration/<portfolio>',method='POST')
+def delete_portfolio(portfolio):
+    r = requests.post(URL_TO_MORRIS_PORTFOLIOS_API+"/delete_decoration/"+portfolio)
+    return r.text
 # End Portfolio work
 
 # Begin Tag work
@@ -134,6 +147,12 @@ def get_records(columns):
 def add_record_to_tag(tag,key):
     r = requests.post(URL_TO_MORRIS_TAGS_API+"/decoration/add_record/"+tag+"/"+key)
     return r.text
+
+@app.route('/tag/delete_decoration/<tag>',method='POST')
+def delet_tag(tag):
+    r = requests.post(URL_TO_MORRIS_TAGS_API+"/delete_decoration/"+tag)
+    return r.text
+# end Tag work
 
 # BEGIN SERVER-SIDE CALLS for Morris Content Manager
 

@@ -9,4 +9,3 @@ SOLR_URL = 'http://localhost:8983/solr'
 DECORATION_SOLR_FIELD_0 = 'portfolios'
 DECORATION_SOLR_FIELD_1 = 'tags'
 
-

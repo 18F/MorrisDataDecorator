@@ -12,7 +12,8 @@
 
 var HANDLER_NAMESPACE_OBJECT = {
     portfolo_url : "/portfolio",
-    tag_url : "/tag"
+    tag_url : "/tag",
+    refresh_droppables : function() {}
 }
 
 var currentKeyToContent;
@@ -29,24 +30,48 @@ function set_vote_value(data) {
        $('#vote_quantity').html(decodeURIComponent(data));
 }
 var global_portfolios = [];
-function set_decorations(selector,data,decotype) {
+function set_decorations(url,selector,data) {
       var names = data;
       var ul = $(selector);
       ul.empty();
       $.each(names, function (idx, elem) {
-          ul.append('<div style="z-index: 1" class="decoration mydraggable droppableportfolio"><img src="./MorrisDataDecorator/imgs/1384165052_cursor_drag_arrow_2.png" alt="drag">' + elem + "</div>&nbsp;");
+	  var name = elem;
+	  var close_id = ' id="draggable-close-'+name+'"';
+	  var draggable_id = ' id="draggable-id-'+name+'"';
+// TODO: This won't handle spaces, we probably need a javascript URL-encode here,
+// which means we will have to be very careful to unencode below
+          ul.append('<div '+draggable_id+' style="z-index: 1" class="decoration mydraggable droppableportfolio"><img class="draggable-handle" src="./MorrisDataDecorator/imgs/icn_list.svg" alt="drag">' + 
+'<span class="draggable-name">' + 
+elem  + 
+'</span>' + 
+'<img class="draggable-close" '+close_id+' src="./MorrisDataDecorator/imgs/gnome_window_close.png" alt="delete">&nbsp;' +
+'</div>'
+);
          $('.mydraggable').draggable({ revert: true });
          $('.droppableportfolio' ).droppable({
            tolerance: "touch",
            drop: function(event, ui) {
-	       alert("set_decorations drop");
-                 var text = $(this).text();
-                 $.post("/"+decotype+"/add_record/"+text+"/"+currentKeyToContent
+               var text = $(this).attr('id').substring("draggable-id-".length);
+                 $.post(url+"/add_record/"+text+"/"+currentKeyToContent
                  ).fail(function() { alert("The addition of that record to that portfolio failed."); });
            }
+	 });
+      $('#draggable-close-'+name).click(
+	     function(event) {
+                 var text = $(this).attr('id').substring("draggable-close-".length);
+                 $.post(url+"/delete_decoration/"+text
+                       ).fail(function() 
+			      { alert("The deletion of that decoration failed."+text+"|"+decotype); });
+// We really need to stop event bubbling on this, this line should do it.
+		 event.stopPropagation ? event.stopPropagation() : (event.cancelBubble=true);   
+// Now we need to refresh the portfolio_list, or some list...
+	  // we probably need to pass this in as a function...
+		 get_portfolio_list();
+
     });
       })
-}
+}	   
+
 
 function set_current_key(data) {
      currentKeyToContent = data;
@@ -84,7 +109,9 @@ function get_portfolio_list(finish_func) {
            function (data) {
                 var names = data['data'];
                 global_portfolios = names;
-                set_decorations('#portfolio_list',names,'portfolio');
+               set_decorations(HANDLER_NAMESPACE_OBJECT.portfolio_url,
+'#portfolio_list',names);
+//	       HANDLER_NAMESPACE_OBJECT.refresh_droppables();
 	       finish_func();
            }
           ).fail(function() { alert("Call to portfolio content manager failed."); });
@@ -93,7 +120,8 @@ function get_portfolio_list(finish_func) {
 function get_tag_list(finish_func) {
     $.get(HANDLER_NAMESPACE_OBJECT.tag_url,{},
            function (data) { 
-                set_decorations('#tag_list',data['data'],'tag');
+	       alert("tags"+data['data']);
+               set_decorations(HANDLER_NAMESPACE_OBJECT.tag_url,'#tag_list',data['data']);
                 global_tags = data['data'];
 	       finish_func();
            }
@@ -104,7 +132,7 @@ function get_current_tag_list(name) {
        $.get(HANDLER_NAMESPACE_OBJECT.tag_url+"/"+name,{},
            function (data) { 
                datax = jQuery.parseJSON( data );
-               set_decorations('#current_tag_list',datax['data'],'tag');
+               set_decorations(HANDLER_NAMESPACE_OBJECT.tag_url,'#current_tag_list',datax['data']);
            }
           ).fail(function() { alert("Call to tag content manager failed."); });
 }
@@ -113,7 +141,7 @@ function get_current_portfolio_list(name) {
        $.get(HANDLER_NAMESPACE_OBJECT.portfolio_url+"/"+name,{},
            function (data) { 
                datax = jQuery.parseJSON( data );
-               set_decorations('#current_portfolio_list',datax['data'],'tag');
+               set_decorations(HANDLER_NAMESPACE_OBJECT.portfolio_url,'#current_portfolio_list',datax['data']);
            }
           ).fail(function() { alert("Call to portfolio content manager failed for:"+name); });
 }
@@ -121,7 +149,7 @@ function get_current_portfolio_list(name) {
 function add_portfolio_handler() {
         var name = $('#new_portfolio_name').val();
        $.post(HANDLER_NAMESPACE_OBJECT.portfolio_url+"/"+name,{},
-              function() { get_portfolio_list(HANDLER_NAMESPACE_OBJECT.portfolio_url); }
+              function() { get_portfolio_list(); }
           ).fail(function() { alert("Call to change content manager failed."); });
 }
 

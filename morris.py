@@ -15,6 +15,10 @@ implementer of the Morris system.  Decorations including scoring, tagging, and c
         """
 
     @abstractproperty
+    def deleteDecorations(self,decos):
+        """ Delete arguments and all associations.
+        """
+    @abstractproperty
     def createContents(self,contents):
         """ Idempotently create empty content records if they do not already exist.
         """
@@ -106,17 +110,6 @@ implementer of the Morris system.  Decorations including scoring, tagging, and c
             retval = retval + '\"{0}\",\"{1}\"\n'.format(d,c)
         return retval
 
-    # @abstractproperty
-    # def exportContentsToDecorationsAsCSV(self):
-    #     """
-    # Export the entire datastore as a CSV file 
-    #     """
-
-    # @abstractproperty
-    # def exportDecorationsToContentsAsCSV(self):
-    #     """
-    # Export the entire datastore as a CSV file 
-    #     """
 
     @abstractproperty
     def exportContentsToDecorationsAsCSVWithClientDataColumns(self,columns):

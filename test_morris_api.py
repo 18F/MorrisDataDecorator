@@ -63,16 +63,12 @@ class TestMorrisWebServiceAPI(unittest.TestCase):
         r = requests.get(URLtoMorrisAPI+"/ping_morris_api")
         self.assertTrue(r.status_code == 200)
 
-
     def test_canCreateDecoration(self):
         name = "spud"
         r = requests.post(URLtoMorrisAPI+"/decoration/"+name)
         self.assertTrue(r.status_code == 200)
         r = requests.get(URLtoMorrisAPI+"/decoration/"+name)
         self.assertTrue(r.status_code == 200)
-
-
-
 
     def test_can_export_decorations_reports_to_csv(self):
         """"
@@ -123,6 +119,25 @@ class TestMorrisWebServiceAPI(unittest.TestCase):
         d = r.json()
         print "d = "+repr(d['data'])
         self.assertTrue(content in d['data'])
+
+    def test_canDelete(self):
+        decoration= "spud"
+        r = self.add_decoration(decoration)
+        self.assertTrue(r.status_code == 200)
+        # now add a record
+        content = "mykey"
+        self.add_record(decoration,content)
+        r = requests.get(URLtoMorrisAPI+"/decoration/"+decoration)
+        self.assertTrue(r.status_code == 200)
+        d = r.json()
+        print "d['data'] = "+repr(d['data'])
+        # Todo: This needs to be updated to give actual feedback
+        # in the return value about the success of the delete.
+        r = requests.post(URLtoMorrisAPI+"/delete_decoration/"+decoration)
+        d = r.json()
+        r = requests.get(URLtoMorrisAPI+"/decoration/"+decoration)
+        d = r.json()
+        self.assertEqual([],d['data'])
 
 
 # Much more is needed to make this complete---but I am a Spiker!

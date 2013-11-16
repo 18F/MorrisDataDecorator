@@ -3,6 +3,14 @@ from morris import AbstractMorrisDecorator
 import solr
 import sys
 import urllib
+import logging
+logger = logging.getLogger('morris_solr')
+hdlr = logging.FileHandler('../logs/MorrisSolr.log')
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+hdlr.setFormatter(formatter)
+logger.addHandler(hdlr) 
+logger.setLevel(logging.INFO)
+
 
 class SolrMorrisDecorator(AbstractMorrisDecorator):
     def __init__(self,solrURL):
@@ -33,6 +41,32 @@ class SolrMorrisDecorator(AbstractMorrisDecorator):
             print exc_type
             print exc_value
             print exc_traceback
+
+    def deleteDecorations(self,decos):
+        for d in decos:
+            self.deleteDecoration(d)
+
+    def deleteDecoration(self,deco):
+        try:
+            logger.error('Call to deleteDecoration: '+deco)
+            d1 = 'document_type:'+self.ASSOCIATION_TYPE+' AND '+ \
+                self.DECORATION_NAME+':'+urllib.quote(deco)
+            d2 = 'document_type:'+self.DECORATION_TYPE+' AND '+ \
+                self.DECORATION_NAME+':'+urllib.quote(deco)
+            logger.info('deleDecorationQueries = '+repr(d1)+'|'+repr(d2))
+            r1 = self.solrCon.delete_query(d1)
+            r2 = self.solrCon.delete_query(d2)
+            self.solrCon.commit()
+            logger.info('deleteDecoration responses! '+repr(r1)+'|'+repr(r2))
+            logger.info('deleteDecoration Success! '+d1+'|'+d2)
+        except:
+            logger.error('deleteDecoration Error: '+exc_type)
+            logger.error('deleteDecoration Error: '+exc_value)
+            logger.error('deleteDecoration Error: '+exc_traceback)
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            print exc_type
+            print exc_value
+            print exc_traceback
         
     def createDecorations(self,decos):
         current = self.getAllDecorations()
@@ -42,10 +76,13 @@ class SolrMorrisDecorator(AbstractMorrisDecorator):
                 d = {}
                 d[self.DOCUMENT_TYPE] = self.DECORATION_TYPE
                 d[self.DECORATION_NAME] = urllib.quote(dec)
+                logger.info('name before quote |'+dec+'|')
+                logger.info('name after quote '+urllib.quote(dec))
                 d['id'] = self.DECORATION_TYPE+str(self.deco_ids)
                 self.deco_ids = self.deco_ids + 1
                 l.append(d)
         try:
+            logger.info('adding decorations: '+repr(l))
             self.solrCon.add_many(l)
             self.solrCon.commit()
         except:
@@ -67,6 +104,7 @@ class SolrMorrisDecorator(AbstractMorrisDecorator):
                 self.cont_ids = self.cont_ids + 1
                 l.append(d)
         try:
+            logger.info('adding content: '+repr(l))
             self.solrCon.add_many(l)
             self.solrCon.commit()
         except:
@@ -83,15 +121,17 @@ class SolrMorrisDecorator(AbstractMorrisDecorator):
         l = []
         d = {}
         d[self.DOCUMENT_TYPE] = self.ASSOCIATION_TYPE
-        d[self.DECORATION_TYPE] = urllib.quote(decoration)
-        d[self.CONTENT_TYPE] = urllib.quote(content)
+        d[self.DECORATION_NAME] = urllib.quote(decoration)
+        d[self.CONTENT_NAME] = urllib.quote(content)
         d['id'] = self.ASSOCIATION_TYPE+str(self.assc_ids)
         self.assc_ids = self.assc_ids + 1
         l.append(d)
         try:
             self.solrCon.add_many(l)
             self.solrCon.commit()
+            logger.info('associated: '+repr(l))
         except:
+            logger.error('Assocation failed: '+exc_type,exc_value,exc_taceback)
             print "assocation add failure"
             exc_type, exc_value, exc_traceback = sys.exc_info()
             print exc_type
@@ -100,34 +140,38 @@ class SolrMorrisDecorator(AbstractMorrisDecorator):
 
     def getContentsForDecoration(self,decoration):
         search = 'document_type:'+self.ASSOCIATION_TYPE
-        search = search + ' AND ' + self.DECORATION_TYPE+':'+urllib.quote(decoration)
+        search = search + ' AND ' + self.DECORATION_NAME+':'+urllib.quote(decoration)
+        logger.info('getContenstForDecorationQuery = '+search)
         transactionDicts = self.solrCon.query(search,fl=self.CONTENT_TYPE,
                                               deftype='edismax')
         decos = []
         for hit in transactionDicts.results:
-            if urllib.unquote(hit[self.DECORATION_TYPE]) == decoration:
-                decos.append(urllib.unquote(hit[self.CONTENT_TYPE]).encode('ascii','ignore'))
+            if urllib.unquote(hit[self.DECORATION_NAME]) == decoration:
+                decos.append(urllib.unquote(hit[self.CONTENT_NAME]).encode('ascii','ignore'))
         return sorted(decos)
 
     def getDecorationsForContent(self,content):
         search = 'document_type:'+self.ASSOCIATION_TYPE
-        search = search + ' AND ' + self.CONTENT_TYPE+':'+urllib.quote(content)
+        search = search + ' AND ' + self.CONTENT_NAME+':'+urllib.quote(content)
         transactionDicts = self.solrCon.query(search,fl=self.DECORATION_TYPE,
                                               deftype='edismax')
         decos = []
         for hit in transactionDicts.results:
-            if urllib.unquote(hit[self.CONTENT_TYPE]) == content:
-                decos.append(urllib.unquote(hit[self.DECORATION_TYPE]).encode('ascii','ignore'))
+            if urllib.unquote(hit[self.CONTENT_NAME]) == content:
+                decos.append(urllib.unquote(hit[self.DECORATION_NAME]).encode('ascii','ignore'))
                 
         return sorted(decos)
 
     def getAllDecorations(self):
+        # Possibly this could be amended to look only 
         search = 'document_type:'+self.DECORATION_TYPE
         transactionDicts = self.solrCon.query(search,fl=self.DECORATION_NAME,
                                               deftype='edismax')
         decos = []
         for hit in transactionDicts.results:
-            decos.append(urllib.unquote(hit[self.DECORATION_NAME]).encode('ascii','ignore'))
+            name = urllib.unquote(hit[self.DECORATION_NAME]).encode('ascii','ignore')
+            if (name not in decos):
+                decos.append(name)
         return sorted(decos)
 
     def getAllContents(self):
