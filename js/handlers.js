@@ -47,7 +47,9 @@ elem  +
 '<img class="draggable-close" '+close_id+' src="./MorrisDataDecorator/imgs/gnome_window_close.png" alt="delete">&nbsp;' +
 '</div>'
 );
-         $('.mydraggable').draggable({ revert: true });
+          $('.mydraggable').draggable({ revert: true, 
+					helper: 'clone',
+					scroll: false});
          $('.droppableportfolio' ).droppable({
            tolerance: "touch",
            drop: function(event, ui) {

@@ -26,6 +26,10 @@ one eventually.
 Status
 ------
 
+This project is currently in a mostly broken state because I have been using primarily in service to two other projects, PricesPaidGUI and PricesPaidAPI.  This is valuable, because I am building a SOLR storage mechanism for it; however, I am also attempting to reuse part of the GUI in both projects, and have not re-styled things for this project.
+
+However, eventually it will be nice to have SOLR persistence.
+
 As of now, if you install the Morris data decorator and the necessary Python components and then host it, 
 you will have a GUI that lets you upload a list of URLs.  You can then circle through these URLs, which are 
 rendered in an IFrame, voting on them, tagging them, and collecting them into portfolios.  You can then 
