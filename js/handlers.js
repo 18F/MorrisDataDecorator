@@ -104,26 +104,24 @@ function dislike_handler() {
           ).fail(function() { alert("Call to change content manager failed."); });
 }
 
-function get_portfolio_list(finish_func) {
+function get_portfolio_list() {
     $.get(HANDLER_NAMESPACE_OBJECT.portfolio_url,{},
            function (data) {
                 var names = data['data'];
                 global_portfolios = names;
                set_decorations(HANDLER_NAMESPACE_OBJECT.portfolio_url,
 '#portfolio_list',names);
-//	       HANDLER_NAMESPACE_OBJECT.refresh_droppables();
-	       finish_func();
+	       HANDLER_NAMESPACE_OBJECT.refresh_droppables();
            }
           ).fail(function() { alert("Call to portfolio content manager failed."); });
 }
 
-function get_tag_list(finish_func) {
+function get_tag_list() {
     $.get(HANDLER_NAMESPACE_OBJECT.tag_url,{},
            function (data) { 
 	       alert("tags"+data['data']);
                set_decorations(HANDLER_NAMESPACE_OBJECT.tag_url,'#tag_list',data['data']);
                 global_tags = data['data'];
-	       finish_func();
            }
           ).fail(function() { alert("Call to tag content manager failed."); });
 }

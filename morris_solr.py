@@ -3,6 +3,7 @@ from morris import AbstractMorrisDecorator
 import solr
 import sys
 import urllib
+import datetime
 import logging
 logger = logging.getLogger('morris_solr')
 hdlr = logging.FileHandler('../logs/MorrisSolr.log')
@@ -28,6 +29,17 @@ class SolrMorrisDecorator(AbstractMorrisDecorator):
         self.CONTENT_NAME = 'content_name'
         return
 
+    def genDeco(self):
+        self.deco_ids = self.deco_ids
+        return str(datetime.datetime.utcnow())+"-"+str(self.deco_ids)
+
+    def genAssc(self):
+        self.assc_ids = self.assc_ids
+        return str(datetime.datetime.utcnow())+"-"+str(self.assc_ids)
+
+    def genCont(self):
+        self.cont_ids = self.cont_ids
+        return str(datetime.datetime.utcnow())+"-"+str(self.cont_ids)
     
     def deleteAll(self):
         try:
@@ -78,8 +90,7 @@ class SolrMorrisDecorator(AbstractMorrisDecorator):
                 d[self.DECORATION_NAME] = urllib.quote(dec)
                 logger.info('name before quote |'+dec+'|')
                 logger.info('name after quote '+urllib.quote(dec))
-                d['id'] = self.DECORATION_TYPE+str(self.deco_ids)
-                self.deco_ids = self.deco_ids + 1
+                d['id'] = self.DECORATION_TYPE+self.genDeco();
                 l.append(d)
         try:
             logger.info('adding decorations: '+repr(l))
@@ -100,8 +111,7 @@ class SolrMorrisDecorator(AbstractMorrisDecorator):
                 d = {}
                 d[self.DOCUMENT_TYPE] = self.CONTENT_TYPE
                 d[self.CONTENT_NAME] = urllib.quote(con)
-                d['id'] = self.CONTENT_TYPE+str(self.cont_ids)
-                self.cont_ids = self.cont_ids + 1
+                d['id'] = self.CONTENT_TYPE+self.genCont()
                 l.append(d)
         try:
             logger.info('adding content: '+repr(l))
@@ -123,8 +133,7 @@ class SolrMorrisDecorator(AbstractMorrisDecorator):
         d[self.DOCUMENT_TYPE] = self.ASSOCIATION_TYPE
         d[self.DECORATION_NAME] = urllib.quote(decoration)
         d[self.CONTENT_NAME] = urllib.quote(content)
-        d['id'] = self.ASSOCIATION_TYPE+str(self.assc_ids)
-        self.assc_ids = self.assc_ids + 1
+        d['id'] = self.ASSOCIATION_TYPE+self.genAssc()
         l.append(d)
         try:
             self.solrCon.add_many(l)
@@ -193,9 +202,8 @@ class SolrMorrisDecorator(AbstractMorrisDecorator):
         else:
             d[self.DOCUMENT_TYPE] = self.DECORATION_TYPE
             d[self.DECORATION_NAME] = urllib.quote(decoration)
-            d['id'] = self.DECORATION_TYPE+str(self.deco_ids)
+            d['id'] = self.DECORATION_TYPE+self.genDeco()
             d[data_name+"_t"] = cd
-        self.deco_ids = self.deco_ids + 1
         l.append(d)
         try:
             self.solrCon.add_many(l)
@@ -250,9 +258,8 @@ class SolrMorrisDecorator(AbstractMorrisDecorator):
         else:
             d[self.DOCUMENT_TYPE] = self.CONTENT_TYPE
             d[self.CONTENT_NAME] = urllib.quote(content)
-            d['id'] = self.CONTENT_TYPE+str(self.deco_ids)
+            d['id'] = self.CONTENT_TYPE+self.genDeco()
             d[data_name+"_t"] = cd
-        self.deco_ids = self.deco_ids + 1
         l.append(d)
         try:
             self.solrCon.add_many(l)
