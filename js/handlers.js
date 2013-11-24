@@ -148,9 +148,16 @@ function get_current_portfolio_list(name) {
 
 function add_portfolio_handler() {
         var name = $('#new_portfolio_name').val();
+// I'm using these as IDs directly (possibly a bad policy, but simpler than
+// building a database table for indirection.
+// So I want to exclude anything except -_[a-Z][0-9]:
+       if ( ! /^[-_:a-zA-Z0-9]+$/.test(name)) {
+	   alert("Sorry, Portfolio Names may contain only alphanumeric characters, hyphens, underscores, and colons.");
+	   } else {
        $.post(HANDLER_NAMESPACE_OBJECT.portfolio_url+"/"+name,{},
               function() { get_portfolio_list(); }
           ).fail(function() { alert("Call to change content manager failed."); });
+   }
 }
 
 function add_tag_handler() {
