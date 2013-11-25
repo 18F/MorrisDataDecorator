@@ -54,7 +54,11 @@ elem  +
            tolerance: "touch",
            drop: function(event, ui) {
                var text = $(this).attr('id').substring("draggable-id-".length);
-                 $.post(url+"/add_record/"+text+"/"+currentKeyToContent
+	       var transaction = ui.draggable.attr('id');
+                 $.post(url+"/add_record/"+text+"/"+transaction,
+			function (data) {
+		    $(HANDLER_NAMESPACE_OBJECT.decoration_add_dialog_id).dialog('open');
+			}
                  ).fail(function() { alert("The addition of that record to that portfolio failed."); });
            }
 	 });
