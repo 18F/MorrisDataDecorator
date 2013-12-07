@@ -67,8 +67,8 @@
           </div>
           <div class="row" id="portfolios">
             <div class="col-md-8"> 
-	    	 <button type="button" class="btn btn-like" id="add_portfolio_button">Add Portfolio</button>
 	    	 <input type="text" id="new_portfolio_name" placeholder="New Portfolio Name...">
+	    	 <button type="button" class="btn btn-like" id="add_portfolio_button">Create Portfolio</button>
                <div>All Portfolios</div>
                  <ul id="portfolio_list"></ul>
             </div>

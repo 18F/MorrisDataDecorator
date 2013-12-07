@@ -12,6 +12,7 @@
 
 var HANDLER_NAMESPACE_OBJECT = {
     portfolo_url : "/portfolio",
+    portfolio_url_addendum: "?",
     tag_url : "/tag",
     refresh_droppables : function() {}
 }
@@ -30,7 +31,7 @@ function set_vote_value(data) {
        $('#vote_quantity').html(decodeURIComponent(data));
 }
 var global_portfolios = [];
-function set_decorations(url,selector,data) {
+function set_decorations(url,addendum,selector,data) {
       var names = data;
       var ul = $(selector);
       ul.empty();
@@ -40,7 +41,7 @@ function set_decorations(url,selector,data) {
 	  var draggable_id = ' id="draggable-id-'+name+'"';
 // TODO: This won't handle spaces, we probably need a javascript URL-encode here,
 // which means we will have to be very careful to unencode below
-          ul.append('<div '+draggable_id+' style="z-index: 1" class="decoration mydraggable droppableportfolio"><img class="draggable-handle" src="./MorrisDataDecorator/imgs/icn_list.svg" alt="drag">' + 
+          ul.append('<div '+draggable_id+' style="z-index: 1" class="decoration mydraggable droppableportfolio"><img class="draggable-handle" src="./MorrisDataDecorator/imgs/icn_list.png" alt="drag">' + 
 '<span class="draggable-name">' + 
 elem  + 
 '</span>' + 
@@ -55,7 +56,7 @@ elem  +
            drop: function(event, ui) {
                var text = $(this).attr('id').substring("draggable-id-".length);
 	       var transaction = ui.draggable.attr('id');
-                 $.post(url+"/add_record/"+text+"/"+transaction,
+                 $.post(url+"/add_record/"+text+"/"+transaction,HANDLER_NAMESPACE_OBJECT.portfolio_post_data,
 			function (data) {
 		    $(HANDLER_NAMESPACE_OBJECT.decoration_add_dialog_id).dialog('open');
 			}
@@ -65,7 +66,7 @@ elem  +
       $('#draggable-close-'+name).click(
 	     function(event) {
                  var text = $(this).attr('id').substring("draggable-close-".length);
-                 $.post(url+"/delete_decoration/"+text
+                 $.post(url+"/delete_decoration/"+text,HANDLER_NAMESPACE_OBJECT.portfolio_post_data
                        ).fail(function() 
 			      { alert("The deletion of that decoration failed."+text+"|"+decotype); });
 // We really need to stop event bubbling on this, this line should do it.
@@ -111,25 +112,27 @@ function dislike_handler() {
 }
 
 function get_portfolio_list() {
-    $.get(HANDLER_NAMESPACE_OBJECT.portfolio_url,{},
+    $.get(HANDLER_NAMESPACE_OBJECT.portfolio_url+HANDLER_NAMESPACE_OBJECT.portfolio_url_addendum,{},
            function (data) {
                 var names = data['data'];
                 global_portfolios = names;
                set_decorations(HANDLER_NAMESPACE_OBJECT.portfolio_url,
+HANDLER_NAMESPACE_OBJECT.portfolio_url_addendum,
 '#portfolio_list',names);
 	       HANDLER_NAMESPACE_OBJECT.refresh_droppables();
            }
-          ).fail(function() { alert("Call to portfolio content manager failed."); });
+          ).fail(function() { alert("Call to portfolio content manager failed in get_portfolio_list."); });
 }
 
 function get_tag_list() {
     $.get(HANDLER_NAMESPACE_OBJECT.tag_url,{},
            function (data) { 
 	       alert("tags"+data['data']);
-               set_decorations(HANDLER_NAMESPACE_OBJECT.tag_url,'#tag_list',data['data']);
+               set_decorations(HANDLER_NAMESPACE_OBJECT.tag_url,
+'#tag_list',data['data']);
                 global_tags = data['data'];
            }
-          ).fail(function() { alert("Call to tag content manager failed."); });
+          ).fail(function() { alert("Call to tag content manager failed in get_tag_list."); });
 }
 
 function get_current_tag_list(name) {
@@ -138,16 +141,18 @@ function get_current_tag_list(name) {
                datax = jQuery.parseJSON( data );
                set_decorations(HANDLER_NAMESPACE_OBJECT.tag_url,'#current_tag_list',datax['data']);
            }
-          ).fail(function() { alert("Call to tag content manager failed."); });
+          ).fail(function() { alert("Call to tag content manager failed in get_current_tag_list."); });
 }
 
 function get_current_portfolio_list(name) {
-       $.get(HANDLER_NAMESPACE_OBJECT.portfolio_url+"/"+name,{},
+alert("hello"+
+HANDLER_NAMESPACE_OBJECT.portfolio_url+"/"+name+HANDLER_NAMESPACE_OBJECT.portfolio_url_addendum);
+       $.get(HANDLER_NAMESPACE_OBJECT.portfolio_url+"/"+name+HANDLER_NAMESPACE_OBJECT.portfolio_url_addendum,{},
            function (data) { 
                datax = jQuery.parseJSON( data );
                set_decorations(HANDLER_NAMESPACE_OBJECT.portfolio_url,'#current_portfolio_list',datax['data']);
            }
-          ).fail(function() { alert("Call to portfolio content manager failed for:"+name); });
+          ).fail(function() { alert("Call to portfolio content manager in get_current_portfolio_list failed for:"+name); });
 }
 
 function add_portfolio_handler() {
@@ -158,7 +163,7 @@ function add_portfolio_handler() {
        if ( ! /^[-_:a-zA-Z0-9]+$/.test(name)) {
 	   alert("Sorry, Portfolio Names may contain only alphanumeric characters, hyphens, underscores, and colons.");
 	   } else {
-       $.post(HANDLER_NAMESPACE_OBJECT.portfolio_url+"/"+name,{},
+       $.post(HANDLER_NAMESPACE_OBJECT.portfolio_url+"/"+name,HANDLER_NAMESPACE_OBJECT.portfolio_post_data,
               function() { get_portfolio_list(); }
           ).fail(function() { alert("Call to change content manager failed."); });
    }
