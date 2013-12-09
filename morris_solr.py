@@ -58,6 +58,24 @@ class SolrMorrisDecorator(AbstractMorrisDecorator):
         for d in decos:
             self.deleteDecoration(d)
 
+    def deleteAssociation(self,decoration,content):
+        try:
+            logger.error('Call to deleteDecoration: '+decoration)
+            d1 = 'document_type:'+self.ASSOCIATION_TYPE+' AND '+ \
+                self.DECORATION_NAME+':'+urllib.quote(decoration) +' AND '+ \
+                self.CONTENT_NAME+':'+urllib.quote(content)
+            r1 = self.solrCon.delete_query(d1)
+            self.solrCon.commit()
+            logger.info('deleteDecoration Success! '+d1)
+        except:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            logger.error('deleteDecoration Error: '+repr(exc_type))
+            logger.error('deleteDecoration Error: '+repr(exc_value))
+            logger.error('deleteDecoration Error: '+repr(exc_traceback))
+            print exc_type
+            print exc_value
+            print exc_traceback
+
     def deleteDecoration(self,deco):
         try:
             logger.error('Call to deleteDecoration: '+deco)
@@ -72,10 +90,10 @@ class SolrMorrisDecorator(AbstractMorrisDecorator):
             logger.info('deleteDecoration responses! '+repr(r1)+'|'+repr(r2))
             logger.info('deleteDecoration Success! '+d1+'|'+d2)
         except:
-            logger.error('deleteDecoration Error: '+exc_type)
-            logger.error('deleteDecoration Error: '+exc_value)
-            logger.error('deleteDecoration Error: '+exc_traceback)
             exc_type, exc_value, exc_traceback = sys.exc_info()
+            logger.error('deleteDecoration Error: '+repr(exc_type))
+            logger.error('deleteDecoration Error: '+repr(exc_value))
+            logger.error('deleteDecoration Error: '+repr(exc_traceback))
             print exc_type
             print exc_value
             print exc_traceback

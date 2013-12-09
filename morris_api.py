@@ -119,6 +119,10 @@ def add_record_to_decoration(decoration,key):
 def delete_decoration( name="Mystery Recipe" ):
     return { "success" : False, "error" : "delete not implemented yet" }
 
+@app.route('/delete_association/<decoration>/<content>', method='POST')
+def delete_association(decoration,content):
+    return md.deleteAssociation(decoration,content)
+
 #END DECORATION SECTION
 
 #BEGIN MORRIS CONTENT MANAGEMENT

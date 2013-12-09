@@ -148,6 +148,27 @@ Make sure the association has been removed.
         decorations_out = self.d.getDecorationsForContent(content_record_0)
         self.assertEqual(decorations_out,[])
 
+    def test_can_delete_assocation(self):
+        """
+First add a data decoration, implicitly creating a decoration
+Remove the decoration
+Make sure the association has been removed.
+"""
+        self.d.associateDecorationWithContentSingle(decoration_0,content_record_0)
+        decorations_out = self.d.getDecorationsForContent(content_record_0)
+        self.assertTrue(decoration_0 in decorations_out)
+        contents_out = self.d.getContentsForDecoration(decoration_0)
+        self.assertEqual(contents_out[0],content_record_0)
+
+        # now that we have constructed that, let's delete the decoration
+        # and make sure all the associations are removed.
+        self.d.deleteAssociation(decoration_0,content_record_0)
+        contents_out = self.d.getContentsForDecoration(decoration_0)
+        self.assertEqual(contents_out,[])
+
+        decorations_out = self.d.getDecorationsForContent(content_record_0)
+        self.assertEqual(decorations_out,[])
+
     def test_get_returns_empty_list_if_uncreated(self):
         """
 Here we test that we are properly making a distinction between a decoration

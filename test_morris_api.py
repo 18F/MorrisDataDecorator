@@ -59,68 +59,87 @@ class TestMorrisWebServiceAPI(unittest.TestCase):
         # Need to make sure bottle is started up!
         time.sleep(0.3)
 
-    def test_canPingMorrisAPI(self):
-        r = requests.get(URLtoMorrisAPI+"/ping_morris_api")
-        self.assertTrue(r.status_code == 200)
+#     def test_canPingMorrisAPI(self):
+#         r = requests.get(URLtoMorrisAPI+"/ping_morris_api")
+#         self.assertTrue(r.status_code == 200)
 
-    def test_canCreateDecoration(self):
-        name = "spud"
-        r = requests.post(URLtoMorrisAPI+"/decoration/"+name)
-        self.assertTrue(r.status_code == 200)
-        r = requests.get(URLtoMorrisAPI+"/decoration/"+name)
-        self.assertTrue(r.status_code == 200)
+#     def test_canCreateDecoration(self):
+#         name = "spud"
+#         r = requests.post(URLtoMorrisAPI+"/decoration/"+name)
+#         self.assertTrue(r.status_code == 200)
+#         r = requests.get(URLtoMorrisAPI+"/decoration/"+name)
+#         self.assertTrue(r.status_code == 200)
 
-    def test_can_export_decorations_reports_to_csv(self):
-        """"
-        We will try to test using a "complete circuit" methodology.
-        """
-        self.add_decoration("aaa")
-        self.add_record("aaa","r1")
-        self.add_record("aaa","r2")
-        self.add_decoration("bbb")
-        self.add_record("bbb","r3")
-        self.add_record("bbb","r4")
-        self.add_decoration("ccc")
-        self.add_record("ccc","r5")
-        r = requests.get(URLtoMorrisAPI+"/decoration_records")
-        self.assertTrue(r.status_code == 200)
-        # Now we try to build a CSV reader to check that we got what we put in!
-        input = StringIO.StringIO(r.text)
-#        print "r.text = "+r.text
-        r = csv.reader(input)
-#        for row in r:
-#            print ', '.join(row)
+#     def test_can_export_decorations_reports_to_csv(self):
+#         """"
+#         We will try to test using a "complete circuit" methodology.
+#         """
+#         self.add_decoration("aaa")
+#         self.add_record("aaa","r1")
+#         self.add_record("aaa","r2")
+#         self.add_decoration("bbb")
+#         self.add_record("bbb","r3")
+#         self.add_record("bbb","r4")
+#         self.add_decoration("ccc")
+#         self.add_record("ccc","r5")
+#         r = requests.get(URLtoMorrisAPI+"/decoration_records")
+#         self.assertTrue(r.status_code == 200)
+#         # Now we try to build a CSV reader to check that we got what we put in!
+#         input = StringIO.StringIO(r.text)
+# #        print "r.text = "+r.text
+#         r = csv.reader(input)
+# #        for row in r:
+# #            print ', '.join(row)
 
-    def test_can_export_decoration_to_csv(self):
-        """"
-        We will try to test using a "complete circuit" methodology.
-        """
-        self.add_decoration("aaa")
-        self.add_decoration("bbb")
-        self.add_decoration("ccc")
-        r = requests.get(URLtoMorrisAPI+"/decoration_export")
-        self.assertTrue(r.status_code == 200)
-        input = StringIO.StringIO(r.text)
-        r = csv.reader(input)
-#       for row in r:
-#            print ', '.join(row)
+#     def test_can_export_decoration_to_csv(self):
+#         """"
+#         We will try to test using a "complete circuit" methodology.
+#         """
+#         self.add_decoration("aaa")
+#         self.add_decoration("bbb")
+#         self.add_decoration("ccc")
+#         r = requests.get(URLtoMorrisAPI+"/decoration_export")
+#         self.assertTrue(r.status_code == 200)
+#         input = StringIO.StringIO(r.text)
+#         r = csv.reader(input)
+# #       for row in r:
+# #            print ', '.join(row)
 
 
-    def test_canCreateDecorationWithRecords(self):
-        print "current thread name"+threading.currentThread().getName()
-        decoration= "spud"
-        r = self.add_decoration(decoration)
-        self.assertTrue(r.status_code == 200)
-        # now add a record
-        content = "mykey"
-        self.add_record(decoration,content)
-        r = requests.get(URLtoMorrisAPI+"/decoration/"+decoration)
-        self.assertTrue(r.status_code == 200)
-        d = r.json()
-        print "d = "+repr(d['data'])
-        self.assertTrue(content in d['data'])
+#     def test_canCreateDecorationWithRecords(self):
+#         print "current thread name"+threading.currentThread().getName()
+#         decoration= "spud"
+#         r = self.add_decoration(decoration)
+#         self.assertTrue(r.status_code == 200)
+#         # now add a record
+#         content = "mykey"
+#         self.add_record(decoration,content)
+#         r = requests.get(URLtoMorrisAPI+"/decoration/"+decoration)
+#         self.assertTrue(r.status_code == 200)
+#         d = r.json()
+#         print "d = "+repr(d['data'])
+#         self.assertTrue(content in d['data'])
 
-    def test_canDelete(self):
+#     def test_canDelete(self):
+#         decoration= "spud"
+#         r = self.add_decoration(decoration)
+#         self.assertTrue(r.status_code == 200)
+#         # now add a record
+#         content = "mykey"
+#         self.add_record(decoration,content)
+#         r = requests.get(URLtoMorrisAPI+"/decoration/"+decoration)
+#         self.assertTrue(r.status_code == 200)
+#         d = r.json()
+#         print "d['data'] = "+repr(d['data'])
+#         # Todo: This needs to be updated to give actual feedback
+#         # in the return value about the success of the delete.
+#         r = requests.post(URLtoMorrisAPI+"/delete_decoration/"+decoration)
+#         d = r.json()
+#         r = requests.get(URLtoMorrisAPI+"/decoration/"+decoration)
+#         d = r.json()
+#         self.assertEqual([],d['data'])
+
+    def test_canDeleteAssociation(self):
         decoration= "spud"
         r = self.add_decoration(decoration)
         self.assertTrue(r.status_code == 200)
@@ -133,11 +152,11 @@ class TestMorrisWebServiceAPI(unittest.TestCase):
         print "d['data'] = "+repr(d['data'])
         # Todo: This needs to be updated to give actual feedback
         # in the return value about the success of the delete.
-        r = requests.post(URLtoMorrisAPI+"/delete_decoration/"+decoration)
-        d = r.json()
+        r = requests.post(URLtoMorrisAPI+"/delete_association/"+decoration+"/"+content)
+        self.assertTrue(r.status_code == 200)
         r = requests.get(URLtoMorrisAPI+"/decoration/"+decoration)
         d = r.json()
-        self.assertEqual([],d['data'])
+        print "d['data'] = "+repr(d['data'])
 
 
 # Much more is needed to make this complete---but I am a Spiker!

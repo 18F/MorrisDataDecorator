@@ -18,6 +18,7 @@ implementer of the Morris system.  Decorations including scoring, tagging, and c
     def deleteDecorations(self,decos):
         """ Delete arguments and all associations.
         """
+
     @abstractproperty
     def createContents(self,contents):
         """ Idempotently create empty content records if they do not already exist.
@@ -26,6 +27,10 @@ implementer of the Morris system.  Decorations including scoring, tagging, and c
     @abstractproperty
     def associateDecorationWithContentSingle(self,decoration,content):
         """ Assoction the decoration to the content """
+
+    @abstractproperty
+    def deleteAssociation(self,decoration,content):
+        """ deleteAssociation """
 
     @abstractproperty
     def getContentsForDecoration(self,decoration):
