@@ -12,6 +12,8 @@ hdlr.setFormatter(formatter)
 logger.addHandler(hdlr) 
 logger.setLevel(logging.INFO)
 
+LIMIT_NUMBER_DECORATIONS = 5000
+
 
 class SolrMorrisDecorator(AbstractMorrisDecorator):
     def __init__(self,solrURL):
@@ -170,6 +172,7 @@ class SolrMorrisDecorator(AbstractMorrisDecorator):
         search = search + ' AND ' + self.DECORATION_NAME+':'+urllib.quote(decoration)
         logger.info('getContenstForDecorationQuery = '+search)
         transactionDicts = self.solrCon.query(search,fl=self.CONTENT_TYPE,
+                                              rows=LIMIT_NUMBER_DECORATIONS,
                                               deftype='edismax')
         decos = []
         for hit in transactionDicts.results:
@@ -180,7 +183,7 @@ class SolrMorrisDecorator(AbstractMorrisDecorator):
     def getDecorationsForContent(self,content):
         search = 'document_type:'+self.ASSOCIATION_TYPE
         search = search + ' AND ' + self.CONTENT_NAME+':'+urllib.quote(content)
-        transactionDicts = self.solrCon.query(search,fl=self.DECORATION_TYPE,
+        transactionDicts = self.solrCon.query(search,fl=self.DECORATION_TYPE,rows=LIMIT_NUMBER_DECORATIONS,
                                               deftype='edismax')
         decos = []
         for hit in transactionDicts.results:
@@ -192,7 +195,7 @@ class SolrMorrisDecorator(AbstractMorrisDecorator):
     def getAllDecorations(self):
         # Possibly this could be amended to look only 
         search = 'document_type:'+self.DECORATION_TYPE
-        transactionDicts = self.solrCon.query(search,fl=self.DECORATION_NAME,
+        transactionDicts = self.solrCon.query(search,fl=self.DECORATION_NAME,rows=LIMIT_NUMBER_DECORATIONS,
                                               deftype='edismax')
         decos = []
         for hit in transactionDicts.results:
@@ -203,7 +206,7 @@ class SolrMorrisDecorator(AbstractMorrisDecorator):
 
     def getAllContents(self):
         search = 'document_type:'+self.CONTENT_TYPE
-        transactionDicts = self.solrCon.query(search,fl=self.CONTENT_TYPE,
+        transactionDicts = self.solrCon.query(search,fl=self.CONTENT_TYPE,rows=LIMIT_NUMBER_DECORATIONS,
                                               deftype='edismax')
         decos = []
         for hit in transactionDicts.results:
@@ -235,7 +238,7 @@ class SolrMorrisDecorator(AbstractMorrisDecorator):
 
     def getFullContent(self,content):
         search =  self.CONTENT_NAME+':'+urllib.quote(content)
-        transactionDicts = self.solrCon.query(search,fl='*',
+        transactionDicts = self.solrCon.query(search,fl='*',rows=LIMIT_NUMBER_DECORATIONS,
                                               deftype='edismax')
         decos = {}
         for hit in transactionDicts.results:
@@ -248,7 +251,7 @@ class SolrMorrisDecorator(AbstractMorrisDecorator):
 
     def getFullDecoration(self,content):
         search =  self.DECORATION_NAME+':'+urllib.quote(content)
-        transactionDicts = self.solrCon.query(search,fl='*',
+        transactionDicts = self.solrCon.query(search,fl='*',rows=LIMIT_NUMBER_DECORATIONS,
                                               deftype='edismax')
         decos = {}
         for hit in transactionDicts.results:
@@ -292,7 +295,7 @@ class SolrMorrisDecorator(AbstractMorrisDecorator):
     def getClientDataDecorationName(self,decoration,data_name):
         search = 'document_type:'+self.DECORATION_TYPE
         search = search + ' AND ' + self.DECORATION_NAME+':'+urllib.quote(decoration)
-        transactionDicts = self.solrCon.query(search,fl='*',
+        transactionDicts = self.solrCon.query(search,fl='*',rows=LIMIT_NUMBER_DECORATIONS,
                                               deftype='edismax')
         for hit in transactionDicts.results:
             for key, value in hit.iteritems():
@@ -303,7 +306,7 @@ class SolrMorrisDecorator(AbstractMorrisDecorator):
     def getClientDataContentName(self,content,data_name):
         search = 'document_type:'+self.CONTENT_TYPE
         search = search + ' AND ' + self.CONTENT_NAME+':'+urllib.quote(content)
-        transactionDicts = self.solrCon.query(search,fl='*',
+        transactionDicts = self.solrCon.query(search,fl='*',rows=LIMIT_NUMBER_DECORATIONS,
                                               deftype='edismax')
         for hit in transactionDicts.results:
             for key, value in hit.iteritems():
@@ -318,7 +321,7 @@ class SolrMorrisDecorator(AbstractMorrisDecorator):
 #        search = 'document_type:'+self.CONTENT_TYPE
 #        search = search + ' AND ' + self.CONTENT_NAME+':'+urllib.quote(content)
         search =  self.CONTENT_NAME+':'+urllib.quote(content)
-        transactionDicts = self.solrCon.query(search,fl='*',
+        transactionDicts = self.solrCon.query(search,fl='*',rows=LIMIT_NUMBER_DECORATIONS,
                                               deftype='edismax')
         decos = {}
         for hit in transactionDicts.results:
@@ -338,7 +341,7 @@ class SolrMorrisDecorator(AbstractMorrisDecorator):
 #        search = 'document_type:'+self.DECORATION_TYPE
 #        search = search + ' AND ' + self.DECORATION_NAME+':'+urllib.quote(content)
         search = self.DECORATION_NAME+':'+urllib.quote(content)
-        transactionDicts = self.solrCon.query(search,fl='*',
+        transactionDicts = self.solrCon.query(search,fl='*',rows=LIMIT_NUMBER_DECORATIONS,
                                               deftype='edismax')
         decos = {}
         for hit in transactionDicts.results:
