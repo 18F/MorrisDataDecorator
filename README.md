@@ -21,7 +21,7 @@ Introduction
 ------------
 
 The Morris Data Decorator is a way to decorate objects specified by URL which you don't own.  The objects
-can be decorations with integers, such as ratings or votes, can be collected together into portfolios or 
+can be decorations with integers, such as ratings or votes, can be collected together into portfo
 subsets, and can be tagged with strings, or tag clouds.
 
 It provides a simple GUI which operates against 3 distinct APIs: one for content management, one for tags,
@@ -38,9 +38,13 @@ one eventually.
 Status
 ------
 
-This project is currently in a mostly broken state because I have been using primarily in service to two other projects, PricesPaidGUI and PricesPaidAPI.  This is valuable, because I am building a SOLR storage mechanism for it; however, I am also attempting to reuse part of the GUI in both projects, and have not re-styled things for this project.
+This project is currently in a mostly broken state for stand-alone use because I have been using primarily in service to two other projects, PricesPaidGUI and PricesPaidAPI.  However, I would like to restore its stand-alone usage.  It has a nice set of automated user tests which should make this relatively easy.
 
-However, eventually it will be nice to have SOLR persistence.
+The code can currently use in memory storage, and SOLR.  The SOLR usage is far more valuable because it is persistent, and represents somethign someone might want to do with stand-alone usage.
+
+However, one could easily implement a file-based, Reddis-based, or SQL-based implementation based on the unit test suites that already exists.
+
+Before I broke it for stand alone use, it used to do this:
 
 As of now, if you install the Morris data decorator and the necessary Python components and then host it, 
 you will have a GUI that lets you upload a list of URLs.  You can then circle through these URLs, which are 
@@ -55,7 +59,7 @@ It does have several partial test suites that should be of assistance to any wou
 At present it has these limitations:
 
 * Persistence is 100% in memory.  Your site goes down, so does your data.  Think of it 
-as writing on a napkin, and plan to copy your work from the napkin onto something permanent soon.
+as writing on a napkin, and plan to copy your work from the napkin onto something permanent soon. If you use the SOLR back end, you don't have this problem.
 * It doesn't export votes.
 * Voting is not handled consistently with the other parts of the API.
 * The Iframe usage is pretty ugly.
