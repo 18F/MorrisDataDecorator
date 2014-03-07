@@ -42,7 +42,18 @@ class SolrMorrisDecorator(AbstractMorrisDecorator):
     def genCont(self):
         self.cont_ids = self.cont_ids
         return str(datetime.datetime.utcnow())+"-"+str(self.cont_ids)
-    
+
+    def deleteAllDecorations(self):
+        try:
+            self.solrCon.delete_query('document_type:'+self.ASSOCIATION_TYPE)
+            self.solrCon.delete_query('document_type:'+self.DECORATION_TYPE)
+        except:
+            print "deleteAllDecorations failure"
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            print exc_type
+            print exc_value
+            print exc_traceback
+
     def deleteAll(self):
         try:
             self.solrCon.delete_query('document_type:'+self.ASSOCIATION_TYPE)

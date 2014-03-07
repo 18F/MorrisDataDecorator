@@ -11,7 +11,7 @@ def import_csv(file,decorator):
     # Read in the csv file
     # Create the portfolios
     # Remove all of the old portfolios
-
+    decorator.deleteAll()
 
     spamreader = csv.reader(file, delimiter=',', quotechar='"')
     cnt = 0
